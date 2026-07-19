@@ -1,5 +1,9 @@
 # 壽司郎排隊 App 版本記錄
 
+## V3 (2026-07-19)
+**改動：**
+- 舖頭名字型加大：14px → 16px，跟返底欄關注列表字體大小
+
 ## V2 (2026-07-19)
 **改動：**
 - 全面壓縮spacing：header、tab、store-grid、store-card、info-row、tickets
