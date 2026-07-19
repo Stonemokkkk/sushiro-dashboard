@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a1a">
-    <title>壽司郎排隊情況</title>
+    <title>壽司郎排隊</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -16,318 +16,292 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
         }
 
         :root {
-            --sushiro-black: #1a1a1a;
-            --sushiro-red: #e63946;
-            --sushiro-red-dark: #c1121f;
-            --sushiro-white: #ffffff;
-            --sushiro-gray: #f5f5f5;
-            --sushiro-text: #2d2d2d;
-            --sushiro-border: #3d3d3d;
+            --black: #1a1a1a;
+            --red: #e63946;
+            --red-dark: #c1121f;
+            --white: #ffffff;
+            --gray: #f5f5f5;
+            --text: #2d2d2d;
+            --hk: #e63946;
+            --kc: #457b9d;
+            --nt: #2a9d8f;
         }
 
         html, body {
             height: 100%;
             overflow: hidden;
             overscroll-behavior: none;
+            background: var(--black);
         }
 
         body {
-            background: var(--sushiro-black);
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
         }
 
-        /* Header - Thin Bar */
+        /* Header */
         .header {
-            background: var(--sushiro-red);
-            padding: 4px 10px;
-            padding-top: max(4px, env(safe-area-inset-top));
+            background: var(--red);
+            padding: 6px 12px;
+            padding-top: max(6px, env(safe-area-inset-top));
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-shrink: 0;
         }
 
-        .logo-section {
+        .logo {
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
-        .logo {
-            width: 20px;
-            height: 20px;
-            background: var(--sushiro-white);
+        .logo-icon {
+            width: 22px;
+            height: 22px;
+            background: var(--white);
             border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 13px;
         }
 
-        .brand-name {
-            font-size: 11px;
+        .logo-text {
+            font-size: 13px;
             font-weight: 900;
-            color: var(--sushiro-white);
-            letter-spacing: 1px;
+            color: var(--white);
         }
 
-        .time-display {
-            color: var(--sushiro-white);
-            font-size: 11px;
+        .time {
+            font-size: 12px;
             font-weight: 600;
-            font-variant-numeric: tabular-nums;
+            color: var(--white);
             opacity: 0.9;
         }
-            color: var(--sushiro-white);
+
+        /* Region Tabs */
+        .tabs {
+            display: flex;
+            background: #222;
+            flex-shrink: 0;
         }
 
-        .stat-label {
-            font-size: 9px;
-            color: rgba(255,255,255,0.8);
-            margin-top: 2px;
-        }
-
-        /* Grid Container - scrollable */
-        .grid-container {
+        .tab {
             flex: 1;
-            background: var(--sushiro-gray);
-            padding: 8px;
+            padding: 7px 4px;
+            border: none;
+            background: #333;
+            color: #888;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab.active { color: white; }
+        .tab.hk.active { background: var(--hk); }
+        .tab.kc.active { background: var(--kc); }
+        .tab.nt.active { background: var(--nt); }
+        .tab:active { opacity: 0.8; }
+
+        /* Store List - Scrollable */
+        .store-list {
+            flex: 1;
             overflow-y: auto;
-            overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior-y: contain;
-            scroll-behavior: smooth;
+            background: var(--gray);
+            padding: 8px;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            padding-bottom: 12px;
-        }
-
-        /* Rubber band bounce */
-        .grid-container.bounce-top {
-            animation: bounceTop 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-        }
-
-        .grid-container.bounce-bottom {
-            animation: bounceBottom 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-        }
-
-        @keyframes bounceTop {
-            0% { transform: translateY(-30px); }
-            60% { transform: translateY(5px); }
-            100% { transform: translateY(0); }
-        }
-
-        @keyframes bounceBottom {
-            0% { transform: translateY(30px); }
-            60% { transform: translateY(-5px); }
-            100% { transform: translateY(0); }
-        }
-
-        /* Shop Card */
-        .shop-card {
-            background: var(--sushiro-white);
-            border-radius: 8px;
-            padding: 6px 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            position: relative;
+        /* Store Card */
+        .store-card {
+            background: var(--white);
+            border-radius: 12px;
+            margin-bottom: 8px;
             overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            position: relative;
         }
 
-        .shop-card::before {
+        .store-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 3px;
-            background: var(--sushiro-border);
+            height: 4px;
         }
 
-        /* Region colors */
-        .shop-card.region-hk::before {
-            background: #e63946;
+        .store-card.hk::before { background: var(--hk); }
+        .store-card.kc::before { background: var(--kc); }
+        .store-card.nt::before { background: var(--nt); }
+
+        .store-card.tracking {
+            border: 2px solid var(--red);
         }
 
-        .shop-card.region-kc::before {
-            background: #457b9d;
-        }
-
-        .shop-card.region-nt::before {
-            background: #2a9d8f;
-        }
-
-        .shop-card.has-queue.region-hk::before {
-            background: #e63946;
-        }
-
-        .shop-card.has-queue.region-kc::before {
-            background: #457b9d;
-        }
-
-        .shop-card.has-queue.region-nt::before {
-            background: #2a9d8f;
-        }
-
-        .shop-name {
+        .tracking-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--red);
+            color: white;
             font-size: 10px;
-            font-weight: 500;
-            color: var(--sushiro-text);
-            line-height: 1.2;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
         }
 
-        .queue-display {
-            display: flex;
-            align-items: baseline;
-            justify-content: flex-end;
-            gap: 1px;
-        }
-
-        .queue-count {
-            font-size: 22px;
+        /* Store Name */
+        .store-name {
+            font-size: 18px;
             font-weight: 900;
-            color: var(--sushiro-text);
-            line-height: 1;
+            color: var(--text);
+            padding: 12px 14px 6px;
+            line-height: 1.2;
         }
 
-        .queue-count.no-queue {
-            color: #999;
-            font-weight: 400;
-        }
-
-        .queue-unit {
-            font-size: 10px;
-            color: #666;
-        }
-
-        .wait-time {
-            font-size: 9px;
-            color: #888;
-            text-align: right;
-            line-height: 1;
-            margin-top: 1px;
-        }
-
-        .wait-time.has-wait {
-            color: var(--sushiro-red);
-            font-weight: 600;
-        }
-
-        .ticket-numbers {
-            font-size: 8px;
-            color: #666;
-            text-align: right;
-            line-height: 1.1;
-            margin-top: 1px;
-            word-break: break-all;
-        }
-
-        .ticket-numbers.has-tickets {
-            color: var(--sushiro-red-dark);
-            font-weight: 600;
-        }
-
-        /* Footer */
-        .footer {
-            background: var(--sushiro-black);
-            padding: 12px 20px;
-            padding-bottom: max(12px, env(safe-area-inset-bottom));
+        /* Wait Info Row */
+        .wait-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-shrink: 0;
+            padding: 6px 14px 10px;
         }
 
-        .footer-title {
-            color: var(--sushiro-white);
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .footer-refresh {
-            color: var(--sushiro-white);
-            font-size: 11px;
-            opacity: 0.7;
-        }
-
-        .refresh-btn {
-            background: var(--sushiro-red);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .refresh-btn:active {
-            transform: scale(0.95);
-            background: var(--sushiro-red-dark);
-        }
-
-        /* Loading State */
-        .loading-state {
-            grid-column: 1 / -1;
-            grid-row: 1 / -1;
+        .wait-info {
             display: flex;
-            flex-direction: column;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .wait-label {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .wait-number {
+            font-size: 42px;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .wait-number.busy {
+            color: var(--red);
+        }
+
+        .wait-unit {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .queue-info {
+            text-align: right;
+        }
+
+        .queue-number {
+            font-size: 36px;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--text);
+        }
+
+        .queue-label {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Ticket Numbers */
+        .tickets {
+            background: #f8f8f8;
+            padding: 8px 14px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            border-top: 1px solid #eee;
+        }
+
+        .ticket {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ticket.empty {
+            color: #ccc;
+            font-weight: 400;
+        }
+
+        .ticket-label {
+            font-size: 10px;
+            color: #999;
+            text-align: center;
+        }
+
+        /* Tracking Bar */
+        .tracking-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--red);
+            padding: 8px 12px;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+            z-index: 100;
+            display: none;
+        }
+
+        .tracking-bar.show { display: block; }
+
+        .tracking-bar-content {
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
         }
 
-        .loading-spinner {
-            width: 32px;
-            height: 32px;
-            border: 2px solid var(--sushiro-border);
-            border-top-color: var(--sushiro-red);
+        .tracking-bar-store { font-weight: 700; }
+        .tracking-bar-divider { opacity: 0.5; }
+        .tracking-bar-ticket { font-variant-numeric: tabular-nums; }
+        .tracking-bar-status { font-size: 12px; opacity: 0.9; }
+
+        /* Refresh Button */
+        .refresh-btn {
+            position: fixed;
+            bottom: 50px;
+            right: 12px;
+            width: 44px;
+            height: 44px;
+            background: var(--red);
+            color: white;
+            border: none;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 90;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loading-text {
-            font-size: 12px;
-            color: #666;
-        }
-
-        /* Animation */
-        .fade-in {
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        .refresh-btn:active { transform: scale(0.9); }
 
         /* Modal */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.5);
             display: none;
             align-items: flex-end;
@@ -335,9 +309,7 @@
             z-index: 1000;
         }
 
-        .modal-overlay.show {
-            display: flex;
-        }
+        .modal-overlay.show { display: flex; }
 
         .modal-content {
             background: white;
@@ -353,7 +325,7 @@
         }
 
         .modal-header {
-            background: var(--sushiro-red);
+            background: var(--red);
             color: white;
             padding: 10px 14px;
             display: flex;
@@ -361,117 +333,58 @@
             align-items: center;
         }
 
-        .modal-title {
-            font-size: 13px;
-            font-weight: 700;
-        }
+        .modal-title { font-size: 14px; font-weight: 700; }
 
         .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 0 4px;
+            background: none; border: none; color: white;
+            font-size: 18px; cursor: pointer;
         }
 
-        .modal-body {
-            padding: 12px 14px 16px;
-        }
+        .modal-body { padding: 12px 14px 20px; }
 
         .modal-current {
-            font-size: 11px;
-            color: #666;
-            text-align: center;
-            margin-bottom: 10px;
-            padding: 6px;
-            background: #f5f5f5;
-            border-radius: 6px;
+            font-size: 12px; color: #666;
+            text-align: center; margin-bottom: 10px;
+            padding: 6px; background: #f5f5f5; border-radius: 6px;
         }
 
-        .modal-input-group {
-            display: flex;
-            gap: 6px;
-        }
+        .modal-input-group { display: flex; gap: 6px; }
 
         .modal-input {
-            flex: 1;
-            padding: 10px 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 700;
+            flex: 1; padding: 10px 12px;
+            border: 2px solid #e0e0e0; border-radius: 8px;
+            font-size: 18px; font-weight: 700;
             text-align: center;
-            font-variant-numeric: tabular-nums;
         }
 
-        .modal-input:focus {
-            outline: none;
-            border-color: var(--sushiro-red);
-        }
+        .modal-input:focus { outline: none; border-color: var(--red); }
 
         .modal-confirm {
-            background: var(--sushiro-red);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 18px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
+            background: var(--red); color: white; border: none;
+            border-radius: 8px; padding: 10px 18px;
+            font-size: 15px; font-weight: 700; cursor: pointer;
         }
 
-        .modal-confirm:active {
-            background: var(--sushiro-red-dark);
-        }
+        .modal-confirm:active { background: var(--red-dark); }
 
-        .modal-saved {
-            text-align: center;
-            padding: 10px 0;
-        }
-
-        .modal-saved-label {
-            font-size: 11px;
-            color: #666;
-            margin-bottom: 2px;
-        }
-
-        .modal-saved-number {
-            font-size: 28px;
-            font-weight: 900;
-            color: var(--sushiro-red);
-            line-height: 1;
-        }
-
-        .modal-saved-status {
-            font-size: 14px;
-            color: #666;
-            margin: 12px 0;
-        }
+        .modal-saved { text-align: center; padding: 10px 0; }
+        .modal-saved-label { font-size: 11px; color: #666; }
+        .modal-saved-number { font-size: 32px; font-weight: 900; color: var(--red); }
+        .modal-saved-status { font-size: 13px; color: #666; margin: 8px 0; }
 
         .modal-cancel-btn {
-            background: #f5f5f5;
-            color: #666;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 14px;
-            cursor: pointer;
+            background: #f5f5f5; color: #666; border: none;
+            border-radius: 8px; padding: 10px 20px;
+            font-size: 13px; cursor: pointer;
         }
 
         /* Alert Modal */
-        .alert-overlay {
-            background: rgba(0,0,0,0.8);
-        }
+        .alert-overlay { background: rgba(0,0,0,0.8); }
 
-        .alert-content {
-            text-align: center;
-            padding: 32px 24px;
-        }
+        .alert-content { text-align: center; padding: 32px 24px; }
 
         .alert-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
+            font-size: 64px; margin-bottom: 16px;
             animation: bounce 0.5s ease infinite alternate;
         }
 
@@ -481,175 +394,68 @@
         }
 
         .alert-title {
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--sushiro-red);
-            margin-bottom: 8px;
+            font-size: 24px; font-weight: 900;
+            color: var(--red); margin-bottom: 8px;
         }
 
         .alert-message {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 24px;
+            font-size: 16px; color: #666; margin-bottom: 24px;
         }
 
         .alert-btn {
-            background: var(--sushiro-red);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 32px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
+            background: var(--red); color: white; border: none;
+            border-radius: 12px; padding: 14px 32px;
+            font-size: 18px; font-weight: 700; cursor: pointer; width: 100%;
         }
 
-        .alert-btn:active {
-            background: var(--sushiro-red-dark);
+        .alert-btn:active { background: var(--red-dark); }
+
+        /* Loading */
+        .loading {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            height: 100%; gap: 12px;
         }
 
-        /* Shop card with tracking */
-        .shop-card.tracking {
-            border: 2px solid var(--sushiro-red);
+        .spinner {
+            width: 32px; height: 32px;
+            border: 3px solid #ddd; border-top-color: var(--red);
+            border-radius: 50%; animation: spin 0.8s linear infinite;
         }
 
-        .tracking-badge {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: var(--sushiro-red);
-            color: white;
-            font-size: 8px;
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-weight: 700;
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Tracking Reference Bar */
-        .tracking-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--sushiro-red);
-            padding: 8px 12px;
-            padding-bottom: max(8px, env(safe-area-inset-bottom));
-            z-index: 100;
-        }
-
-        .tracking-bar-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: white;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .tracking-bar-store {
-            font-weight: 700;
-        }
-
-        .tracking-bar-divider {
-            opacity: 0.5;
-        }
-
-        .tracking-bar-ticket {
-            font-variant-numeric: tabular-nums;
-        }
-
-        .tracking-bar-status {
-            font-size: 11px;
-            opacity: 0.9;
-        }
-
-        /* Adjust grid when tracking bar is visible */
-        body.has-tracking .footer {
-            display: none;
-        }
-
-        /* Region Tabs */
-        .region-tabs {
-            display: flex;
-            background: #222;
-            padding: 0;
-            gap: 0;
-            flex-shrink: 0;
-        }
-
-        .region-tab {
-            flex: 1;
-            padding: 8px 4px;
-            border: none;
-            background: #333;
-            color: #888;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .region-tab.active {
-            color: white;
-        }
-
-        .region-tab.hk.active {
-            background: #e63946;
-        }
-
-        .region-tab.kc.active {
-            background: #457b9d;
-        }
-
-        .region-tab.nt.active {
-            background: #2a9d8f;
-        }
-
-        .region-tab:active {
-            opacity: 0.8;
-        }
+        .loading-text { font-size: 13px; color: #999; }
     </style>
 </head>
 <body>
-    <!-- Header - Thin Bar -->
+    <!-- Header -->
     <header class="header">
-        <div class="logo-section">
-            <div class="logo">🍣</div>
-            <div class="brand-name">壽司郎</div>
+        <div class="logo">
+            <div class="logo-icon">🍣</div>
+            <div class="logo-text">壽司郎</div>
         </div>
-        <div class="time-display" id="currentTime">--:--</div>
+        <div class="time" id="currentTime">--:--</div>
     </header>
 
     <!-- Region Tabs -->
-    <div class="region-tabs">
-        <button class="region-tab active" data-region="all" onclick="filterRegion('all')">全部</button>
-        <button class="region-tab hk" data-region="香港島" onclick="filterRegion('香港島')">香港島</button>
-        <button class="region-tab kc" data-region="九龍" onclick="filterRegion('九龍')">九龍</button>
-        <button class="region-tab nt" data-region="新界" onclick="filterRegion('新界')">新界</button>
+    <div class="tabs">
+        <button class="tab active" data-region="all" onclick="filterRegion('all')">全部</button>
+        <button class="tab hk" data-region="香港島" onclick="filterRegion('香港島')">香港島</button>
+        <button class="tab kc" data-region="九龍" onclick="filterRegion('九龍')">九龍</button>
+        <button class="tab nt" data-region="新界" onclick="filterRegion('新界')">新界</button>
     </div>
 
-    <!-- Grid Container -->
-    <div class="grid-container">
-        <div class="grid" id="grid">
-            <!-- Loading State -->
-            <div class="loading-state" id="loadingState">
-                <div class="loading-spinner"></div>
-                <div class="loading-text">載入中...</div>
-            </div>
+    <!-- Store List -->
+    <div class="store-list" id="storeList">
+        <div class="loading">
+            <div class="spinner"></div>
+            <div class="loading-text">載入中...</div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <div class="footer">
-        <div class="footer-title">壽司郎排隊情況</div>
-        <div class="footer-refresh" id="refreshTimer">每30秒更新</div>
-        <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">🔄</button>
-    </div>
-
-    <!-- Tracking Reference Bar -->
-    <div class="tracking-bar" id="trackingBar" style="display:none">
+    <!-- Tracking Bar -->
+    <div class="tracking-bar" id="trackingBar">
         <div class="tracking-bar-content">
             <span class="tracking-bar-store" id="trackingBarStore">--</span>
             <span class="tracking-bar-divider">|</span>
@@ -657,6 +463,9 @@
             <span class="tracking-bar-status" id="trackingBarStatus">--</span>
         </div>
     </div>
+
+    <!-- Refresh Button -->
+    <button class="refresh-btn" onclick="refreshData()">🔄</button>
 
     <!-- Ticket Modal -->
     <div class="modal-overlay" id="ticketModal">
@@ -667,7 +476,7 @@
             </div>
             <div class="modal-body">
                 <div class="modal-current" id="modalCurrentTickets">叫緊: --</div>
-                <div class="modal-input-group">
+                <div class="modal-input-group" id="modalInputGroup">
                     <input type="text" class="modal-input" id="ticketInput" placeholder="例如: 162" inputmode="numeric">
                     <button class="modal-confirm" onclick="saveTicket()">確定</button>
                 </div>
@@ -692,11 +501,9 @@
     </div>
 
     <script>
-        // CORS proxy
         const CORS_PROXY = 'https://cors.freehi.workers.dev/?';
         const API_BASE = 'https://sushipass.sushiro.com.hk/api/2.0';
 
-        // Global variables
         let allStores = [];
         let refreshInterval;
         let countdown = 30;
@@ -706,112 +513,93 @@
         let alertPlayed = false;
         let currentRegion = 'all';
 
-        // Max shops to display (4 columns x 11 rows = 44)
-        const MAX_SHOPS = 50;
-
-        // Filter by region
+        // Region filter
         function filterRegion(region) {
             currentRegion = region;
-
-            // Update tab active state
-            document.querySelectorAll('.region-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelector(`[data-region="${region}"]`).classList.add('active');
-
-            // Filter and render
-            renderFilteredGrid();
+            renderList();
         }
 
-        // Render filtered grid
-        function renderFilteredGrid() {
-            let filtered = allStores;
-            if (currentRegion !== 'all') {
-                filtered = allStores.filter(s => s.region === currentRegion);
+        // Render store list
+        function renderList() {
+            const list = document.getElementById('storeList');
+            let filtered = currentRegion === 'all' ? allStores : allStores.filter(s => s.region === currentRegion);
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="loading"><div class="loading-text">冇數據</div></div>';
+                return;
             }
-            renderGrid(filtered);
+
+            list.innerHTML = filtered.map(store => {
+                const hasQueue = store.queue_count > 0;
+                const hasWait = store.wait > 0;
+                const hasTickets = store.tickets && store.tickets.length > 0;
+                const isTracking = trackedStoreId === store.id;
+                const regionClass = getRegionClass(store.region);
+
+                // Pad tickets to 3
+                const tickets = [...(store.tickets || [])];
+                while (tickets.length < 3) tickets.push('');
+
+                return `
+                    <div class="store-card ${regionClass} ${isTracking ? 'tracking' : ''}" onclick="openModal(${store.id})">
+                        ${isTracking ? '<div class="tracking-badge">追蹤中</div>' : ''}
+                        <div class="store-name">${store.shop_name}</div>
+                        <div class="wait-row">
+                            <div class="wait-info">
+                                <span class="wait-number ${store.wait > 30 ? 'busy' : ''}">${store.wait}</span>
+                                <span class="wait-unit">分</span>
+                            </div>
+                            <div class="queue-info">
+                                <div class="queue-number">${store.queue_count}</div>
+                                <div class="queue-label">組等候</div>
+                            </div>
+                        </div>
+                        <div class="tickets">
+                            <div>
+                                <div class="ticket ${tickets[0] ? '' : 'empty'}">${tickets[0] || '-'}</div>
+                                <div class="ticket-label">叫緊</div>
+                            </div>
+                            <div>
+                                <div class="ticket ${tickets[1] ? '' : 'empty'}">${tickets[1] || '-'}</div>
+                                <div class="ticket-label">叫緊</div>
+                            </div>
+                            <div>
+                                <div class="ticket ${tickets[2] ? '' : 'empty'}">${tickets[2] || '-'}</div>
+                                <div class="ticket-label">叫緊</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        // Load tracked ticket from localStorage
-        function loadTrackedTicket() {
-            const saved = localStorage.getItem('sushiro_tracking');
-            if (saved) {
-                const data = JSON.parse(saved);
-                trackedStoreId = data.storeId;
-                trackedTicket = data.ticket;
-                alertPlayed = data.alertPlayed || false;
-            }
-            updateTrackingBar();
+        function getRegionClass(region) {
+            if (region === '香港島') return 'hk';
+            if (region === '九龍') return 'kc';
+            if (region === '新界') return 'nt';
+            return '';
         }
 
-        // Save tracked ticket to localStorage
-        function saveTrackedTicket() {
-            localStorage.setItem('sushiro_tracking', JSON.stringify({
-                storeId: trackedStoreId,
-                ticket: trackedTicket,
-                alertPlayed: alertPlayed
-            }));
-        }
-
-        // Play alert sound
-        function playAlertSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                // Play 3 ding sounds
-                for (let i = 0; i < 3; i++) {
-                    setTimeout(() => {
-                        const oscillator = audioContext.createOscillator();
-                        const gainNode = audioContext.createGain();
-                        oscillator.connect(gainNode);
-                        gainNode.connect(audioContext.destination);
-                        oscillator.frequency.value = 880;
-                        oscillator.type = 'sine';
-                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                        oscillator.start(audioContext.currentTime);
-                        oscillator.stop(audioContext.currentTime + 0.3);
-                    }, i * 400);
-                }
-            } catch (e) {
-                console.log('Audio not supported');
-            }
-        }
-
-        // Show alert
-        function showAlert(title, message) {
-            document.getElementById('alertTitle').textContent = title;
-            document.getElementById('alertMessage').textContent = message;
-            document.getElementById('alertModal').classList.add('show');
-            playAlertSound();
-        }
-
-        // Close alert
-        function closeAlert() {
-            document.getElementById('alertModal').classList.remove('show');
-        }
-
-        // Update tracking reference bar
+        // Update tracking bar
         function updateTrackingBar() {
             const bar = document.getElementById('trackingBar');
             if (!trackedStoreId || !trackedTicket) {
-                bar.style.display = 'none';
-                document.body.classList.remove('has-tracking');
+                bar.classList.remove('show');
                 return;
             }
 
             const store = allStores.find(s => s.id === trackedStoreId);
             if (!store) {
-                bar.style.display = 'none';
-                document.body.classList.remove('has-tracking');
+                bar.classList.remove('show');
                 return;
             }
 
-            bar.style.display = 'block';
-            document.body.classList.add('has-tracking');
+            bar.classList.add('show');
             document.getElementById('trackingBarStore').textContent = store.shop_name;
             document.getElementById('trackingBarTicket').textContent = '籌號: ' + trackedTicket;
 
-            // Calculate status
             if (store.tickets && store.tickets.length > 0) {
                 const ticketNum = parseInt(trackedTicket);
                 const currentTickets = store.tickets.map(t => parseInt(t)).filter(n => !isNaN(n));
@@ -831,7 +619,39 @@
             }
         }
 
-        // Open ticket modal
+        // Play alert sound
+        function playAlertSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.frequency.value = 880;
+                        osc.type = 'sine';
+                        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                        osc.start(ctx.currentTime);
+                        osc.stop(ctx.currentTime + 0.3);
+                    }, i * 400);
+                }
+            } catch (e) {}
+        }
+
+        function showAlert(title, message) {
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMessage').textContent = message;
+            document.getElementById('alertModal').classList.add('show');
+            playAlertSound();
+        }
+
+        function closeAlert() {
+            document.getElementById('alertModal').classList.remove('show');
+        }
+
+        // Modal
         function openModal(storeId) {
             currentStoreId = storeId;
             const store = allStores.find(s => s.id === storeId);
@@ -840,16 +660,13 @@
             document.getElementById('modalStoreName').textContent = store.shop_name;
             document.getElementById('modalCurrentTickets').textContent = '叫緊: ' + (store.tickets.length > 0 ? store.tickets.join(', ') : '--');
 
-            // Check if already tracking this store
             if (trackedStoreId === storeId && trackedTicket) {
-                document.getElementById('ticketInput').style.display = 'none';
-                document.querySelector('.modal-confirm').style.display = 'none';
+                document.getElementById('modalInputGroup').style.display = 'none';
                 document.getElementById('modalSaved').style.display = 'block';
                 document.getElementById('modalSavedNumber').textContent = trackedTicket;
                 updateTrackingStatus(store);
             } else {
-                document.getElementById('ticketInput').style.display = 'block';
-                document.querySelector('.modal-confirm').style.display = 'block';
+                document.getElementById('modalInputGroup').style.display = 'flex';
                 document.getElementById('modalSaved').style.display = 'none';
                 document.getElementById('ticketInput').value = '';
             }
@@ -857,16 +674,13 @@
             document.getElementById('ticketModal').classList.add('show');
         }
 
-        // Close modal
         function closeModal() {
             document.getElementById('ticketModal').classList.remove('show');
             currentStoreId = null;
         }
 
-        // Save ticket
         function saveTicket() {
-            const input = document.getElementById('ticketInput');
-            const ticket = input.value.trim();
+            const ticket = document.getElementById('ticketInput').value.trim();
             if (!ticket) return;
 
             trackedStoreId = currentStoreId;
@@ -874,77 +688,81 @@
             alertPlayed = false;
             saveTrackedTicket();
 
-            // Update modal display
-            document.getElementById('ticketInput').style.display = 'none';
-            document.querySelector('.modal-confirm').style.display = 'none';
+            document.getElementById('modalInputGroup').style.display = 'none';
             document.getElementById('modalSaved').style.display = 'block';
             document.getElementById('modalSavedNumber').textContent = ticket;
 
             const store = allStores.find(s => s.id === currentStoreId);
             if (store) updateTrackingStatus(store);
 
-            // Update card display
-            renderFilteredGrid();
-
-            // Update tracking bar
+            renderList();
             updateTrackingBar();
-
-            // Close modal
             closeModal();
         }
 
-        // Cancel ticket tracking
         function cancelTicket() {
             trackedStoreId = null;
             trackedTicket = null;
             alertPlayed = false;
             localStorage.removeItem('sushiro_tracking');
             closeModal();
-            renderFilteredGrid();
+            renderList();
             updateTrackingBar();
         }
 
-        // Update tracking status display
         function updateTrackingStatus(store) {
-            const statusEl = document.getElementById('modalSavedStatus');
+            const el = document.getElementById('modalSavedStatus');
             if (!store.tickets || store.tickets.length === 0) {
-                statusEl.textContent = '暫無籌號資訊';
+                el.textContent = '暫無籌號資訊';
                 return;
             }
 
-            // Find position in queue
             const ticketNum = parseInt(trackedTicket);
             const currentTickets = store.tickets.map(t => parseInt(t)).filter(n => !isNaN(n));
-
             if (currentTickets.length === 0) {
-                statusEl.textContent = '暫無籌號資訊';
+                el.textContent = '暫無籌號資訊';
                 return;
             }
 
-            // Find the closest current ticket
             const minCurrent = Math.min(...currentTickets);
             const maxCurrent = Math.max(...currentTickets);
 
             if (ticketNum < minCurrent) {
-                // Before current call
-                const diff = minCurrent - ticketNum;
-                statusEl.textContent = `仲有 ${diff} 張枱到你`;
+                el.textContent = `仲有 ${minCurrent - ticketNum} 張枱到你`;
             } else if (ticketNum <= maxCurrent) {
-                // Being called now!
-                statusEl.textContent = '🎉 到你啦！快啲去！';
-                statusEl.style.color = 'var(--sushiro-red)';
+                el.textContent = '🎉 到你啦！快啲去！';
+                el.style.color = 'var(--red)';
                 if (!alertPlayed) {
                     showAlert('到你啦！🎉', '快啲去櫃檯準備入座！');
                     alertPlayed = true;
                     saveTrackedTicket();
                 }
             } else {
-                statusEl.textContent = '已過號';
-                statusEl.style.color = '#999';
+                el.textContent = '已過號';
             }
         }
 
-        // Check all tracked tickets
+        // localStorage
+        function loadTrackedTicket() {
+            const saved = localStorage.getItem('sushiro_tracking');
+            if (saved) {
+                const data = JSON.parse(saved);
+                trackedStoreId = data.storeId;
+                trackedTicket = data.ticket;
+                alertPlayed = data.alertPlayed || false;
+            }
+            updateTrackingBar();
+        }
+
+        function saveTrackedTicket() {
+            localStorage.setItem('sushiro_tracking', JSON.stringify({
+                storeId: trackedStoreId,
+                ticket: trackedTicket,
+                alertPlayed: alertPlayed
+            }));
+        }
+
+        // Check tracked tickets
         function checkTrackedTickets() {
             if (!trackedStoreId || !trackedTicket) return;
 
@@ -957,12 +775,11 @@
 
             const minCurrent = Math.min(...currentTickets);
 
-            // Check if close (within 10 tables)
             if (ticketNum <= minCurrent + 10 && ticketNum >= minCurrent) {
                 if (!alertPlayed) {
                     const diff = minCurrent - ticketNum;
                     if (diff <= 5) {
-                        showAlert('差唔多到你啦！🔔', `快啲去櫃檯準備入座！`);
+                        showAlert('差唔多到你啦！🔔', '快啲去櫃檯準備入座！');
                     } else {
                         showAlert('快輪到你啦！📢', `仲有約 ${diff} 張枱到你，準備吓啦！`);
                     }
@@ -971,82 +788,23 @@
                 }
             }
 
-            // Update tracking bar
             updateTrackingBar();
         }
 
-        // Update time display
+        // Update time
         function updateTime() {
             const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            document.getElementById('currentTime').textContent = `${hours}:${minutes}`;
+            document.getElementById('currentTime').textContent =
+                now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
         }
 
-        // Get region class
-        function getRegionClass(region) {
-            if (region === '香港島') return 'region-hk';
-            if (region === '九龍') return 'region-kc';
-            if (region === '新界') return 'region-nt';
-            return '';
-        }
-
-        // Create shop card HTML
-        function createShopCard(shop) {
-            const hasQueue = shop.queue_count > 0;
-            const hasWait = shop.wait > 0;
-            const hasTickets = shop.tickets && shop.tickets.length > 0;
-            const ticketText = hasTickets ? shop.tickets.join(', ') : '';
-            const isTracking = trackedStoreId === shop.id;
-            const regionClass = getRegionClass(shop.region);
-
-            return `
-                <div class="shop-card ${hasQueue ? 'has-queue' : ''} ${isTracking ? 'tracking' : ''} ${regionClass} fade-in" onclick="openModal(${shop.id})">
-                    ${isTracking ? '<div class="tracking-badge">追蹤中</div>' : ''}
-                    <div class="shop-name">${shop.shop_name}</div>
-                    <div class="queue-display">
-                        <span class="queue-count ${hasQueue ? '' : 'no-queue'}">${shop.queue_count}</span>
-                        <span class="queue-unit">組</span>
-                    </div>
-                    <div class="wait-time ${hasWait ? 'has-wait' : ''}">${hasWait ? shop.wait + '分' : '-'}</div>
-                    <div class="ticket-numbers ${hasTickets ? 'has-tickets' : ''}">${hasTickets ? ticketText : ''}</div>
-                </div>
-            `;
-        }
-
-        // Render grid
-        function renderGrid(stores) {
-            const grid = document.getElementById('grid');
-
-            if (stores.length === 0) {
-                grid.innerHTML = `
-                    <div class="loading-state">
-                        <div class="loading-text">冇數據</div>
-                    </div>
-                `;
-                return;
-            }
-
-            grid.innerHTML = stores.map(store => createShopCard(store)).join('');
-        }
-
-        // Fetch data from API
+        // Fetch data
         async function fetchData() {
             try {
-                // Show loading
-                document.getElementById('grid').innerHTML = `
-                    <div class="loading-state">
-                        <div class="loading-spinner"></div>
-                        <div class="loading-text">載入中...</div>
-                    </div>
-                `;
-
-                // Fetch store list
                 const storeListUrl = `${CORS_PROXY}${API_BASE}/info/storelist?latitude=22&longitude=114&numresults=100&region=HK`;
                 const storeListResponse = await fetch(storeListUrl);
                 const storeListData = await storeListResponse.json();
 
-                // Transform data
                 allStores = storeListData.map(store => ({
                     shop_name: store.name.replace('店', ''),
                     queue_count: store.waitingGroup || 0,
@@ -1057,111 +815,50 @@
                     tickets: []
                 }));
 
-                // Sort by region first, then queue count
                 const regionOrder = { '香港島': 0, '九龍': 1, '新界': 2 };
                 allStores.sort((a, b) => {
-                    const regionDiff = (regionOrder[a.region] || 3) - (regionOrder[b.region] || 3);
-                    if (regionDiff !== 0) return regionDiff;
-                    return b.queue_count - a.queue_count;
+                    const rd = (regionOrder[a.region] || 3) - (regionOrder[b.region] || 3);
+                    return rd !== 0 ? rd : b.queue_count - a.queue_count;
                 });
 
-                // Limit to MAX_SHOPS
-                allStores = allStores.slice(0, MAX_SHOPS);
-
-                // Render initial data
-                renderFilteredGrid();
+                renderList();
                 updateTime();
 
-                // Fetch ticket numbers for each store (in parallel, batch of 10)
+                // Fetch tickets
                 const batchSize = 10;
                 for (let i = 0; i < allStores.length; i += batchSize) {
                     const batch = allStores.slice(i, i + batchSize);
-                    const ticketPromises = batch.map(async (store) => {
+                    await Promise.all(batch.map(async (store) => {
                         try {
-                            const ticketUrl = `${CORS_PROXY}${API_BASE}/remote/groupqueues?region=HK&storeid=${store.id}`;
-                            const ticketResponse = await fetch(ticketUrl);
-                            const ticketData = await ticketResponse.json();
-                            store.tickets = ticketData.storeQueue || [];
+                            const url = `${CORS_PROXY}${API_BASE}/remote/groupqueues?region=HK&storeid=${store.id}`;
+                            const res = await fetch(url);
+                            const data = await res.json();
+                            store.tickets = data.storeQueue || [];
                         } catch (e) {
                             store.tickets = [];
                         }
-                    });
-                    await Promise.all(ticketPromises);
+                    }));
                 }
 
-                // Re-render with ticket numbers
-                renderFilteredGrid();
-
-                // Check tracked tickets
+                renderList();
                 checkTrackedTickets();
-
                 console.log(`✅ 載入成功：${allStores.length} 間店舖`);
             } catch (error) {
                 console.error('❌ 載入失敗:', error);
-                document.getElementById('grid').innerHTML = `
-                    <div class="loading-state">
-                        <div class="loading-text">載入失敗</div>
-                    </div>
-                `;
+                document.getElementById('storeList').innerHTML = '<div class="loading"><div class="loading-text">載入失敗</div></div>';
             }
         }
 
-        // Refresh data
         function refreshData() {
             countdown = 30;
             fetchData();
         }
 
-        // Start auto refresh
         function startAutoRefresh() {
             refreshInterval = setInterval(() => {
                 countdown--;
-                document.getElementById('refreshTimer').textContent = `${countdown}秒後更新`;
-
-                if (countdown <= 0) {
-                    refreshData();
-                }
+                if (countdown <= 0) refreshData();
             }, 1000);
-        }
-
-        // Rubber band bounce on scroll
-        function setupBounceScroll() {
-            const container = document.getElementById('grid');
-            if (!container) return;
-
-            let startY = 0;
-            let isBouncing = false;
-
-            container.addEventListener('touchstart', (e) => {
-                if (!isBouncing) {
-                    startY = e.touches[0].clientY;
-                }
-            }, { passive: true });
-
-            container.addEventListener('touchmove', (e) => {
-                const currentY = e.touches[0].clientY;
-                const diff = currentY - startY;
-                const atTop = container.scrollTop <= 0;
-                const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
-
-                if ((atTop && diff > 0) || (atBottom && diff < 0)) {
-                    e.preventDefault();
-                    container.style.transform = `translateY(${diff * 0.4}px)`;
-                }
-            }, { passive: false });
-
-            container.addEventListener('touchend', () => {
-                const transform = container.style.transform;
-                const match = transform.match(/translateY\((.+?)px\)/);
-                if (match) {
-                    const val = parseFloat(match[1]);
-                    container.style.transition = 'transform 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97)';
-                    container.style.transform = 'translateY(0)';
-                    setTimeout(() => {
-                        container.style.transition = '';
-                    }, 300);
-                }
-            }, { passive: true });
         }
 
         // Initialize
@@ -1170,7 +867,6 @@
             fetchData();
             startAutoRefresh();
             updateTime();
-            setupBounceScroll();
         });
     </script>
 </body>
