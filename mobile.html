@@ -204,33 +204,6 @@
             color: #666;
         }
 
-        .wait-time {
-            font-size: 9px;
-            color: #888;
-            text-align: right;
-            line-height: 1;
-            margin-top: 1px;
-        }
-
-        .wait-time.has-wait {
-            color: var(--sushiro-red);
-            font-weight: 600;
-        }
-
-        .ticket-numbers {
-            font-size: 8px;
-            color: #666;
-            text-align: right;
-            line-height: 1.1;
-            margin-top: 1px;
-            word-break: break-all;
-        }
-
-        .ticket-numbers.has-tickets {
-            color: var(--sushiro-red-dark);
-            font-weight: 600;
-        }
-
         /* Footer */
         .footer {
             background: var(--sushiro-black);
@@ -252,22 +225,6 @@
             color: var(--sushiro-white);
             font-size: 11px;
             opacity: 0.7;
-        }
-
-        .refresh-btn {
-            background: var(--sushiro-red);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .refresh-btn:active {
-            transform: scale(0.95);
-            background: var(--sushiro-red-dark);
         }
 
         /* Loading State */
@@ -307,213 +264,6 @@
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
-        }
-
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.6);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 320px;
-            overflow: hidden;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            background: var(--sushiro-red);
-            color: white;
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0 4px;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .modal-current {
-            font-size: 12px;
-            color: #666;
-            text-align: center;
-            margin-bottom: 16px;
-            padding: 8px;
-            background: #f5f5f5;
-            border-radius: 8px;
-        }
-
-        .modal-input-group {
-            display: flex;
-            gap: 8px;
-        }
-
-        .modal-input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 700;
-            text-align: center;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .modal-input:focus {
-            outline: none;
-            border-color: var(--sushiro-red);
-        }
-
-        .modal-confirm {
-            background: var(--sushiro-red);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .modal-confirm:active {
-            background: var(--sushiro-red-dark);
-        }
-
-        .modal-saved {
-            text-align: center;
-            padding: 16px 0;
-        }
-
-        .modal-saved-label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 4px;
-        }
-
-        .modal-saved-number {
-            font-size: 36px;
-            font-weight: 900;
-            color: var(--sushiro-red);
-            line-height: 1;
-        }
-
-        .modal-saved-status {
-            font-size: 14px;
-            color: #666;
-            margin: 12px 0;
-        }
-
-        .modal-cancel-btn {
-            background: #f5f5f5;
-            color: #666;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        /* Alert Modal */
-        .alert-overlay {
-            background: rgba(0,0,0,0.8);
-        }
-
-        .alert-content {
-            text-align: center;
-            padding: 32px 24px;
-        }
-
-        .alert-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            animation: bounce 0.5s ease infinite alternate;
-        }
-
-        @keyframes bounce {
-            from { transform: scale(1); }
-            to { transform: scale(1.1); }
-        }
-
-        .alert-title {
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--sushiro-red);
-            margin-bottom: 8px;
-        }
-
-        .alert-message {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 24px;
-        }
-
-        .alert-btn {
-            background: var(--sushiro-red);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 32px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .alert-btn:active {
-            background: var(--sushiro-red-dark);
-        }
-
-        /* Shop card with tracking */
-        .shop-card.tracking {
-            border: 2px solid var(--sushiro-red);
-        }
-
-        .tracking-badge {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: var(--sushiro-red);
-            color: white;
-            font-size: 8px;
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-weight: 700;
         }
     </style>
 </head>
@@ -568,40 +318,6 @@
     <div class="footer">
         <div class="footer-title">壽司郎排隊情況</div>
         <div class="footer-refresh" id="refreshTimer">每30秒更新</div>
-        <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">🔄</button>
-    </div>
-
-    <!-- Ticket Modal -->
-    <div class="modal-overlay" id="ticketModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="modalStoreName">輸入你嘅籌號</div>
-                <button class="modal-close" onclick="closeModal()">✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-current" id="modalCurrentTickets">叫緊: --</div>
-                <div class="modal-input-group">
-                    <input type="text" class="modal-input" id="ticketInput" placeholder="例如: 162" inputmode="numeric">
-                    <button class="modal-confirm" onclick="saveTicket()">確定</button>
-                </div>
-                <div class="modal-saved" id="modalSaved" style="display:none">
-                    <div class="modal-saved-label">你嘅籌號</div>
-                    <div class="modal-saved-number" id="modalSavedNumber">--</div>
-                    <div class="modal-saved-status" id="modalSavedStatus">--</div>
-                    <button class="modal-cancel-btn" onclick="cancelTicket()">取消排隊</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Alert Modal -->
-    <div class="modal-overlay alert-overlay" id="alertModal">
-        <div class="modal-content alert-content">
-            <div class="alert-icon">🔔</div>
-            <div class="alert-title" id="alertTitle">差唔多到你啦！</div>
-            <div class="alert-message" id="alertMessage">快啲去櫃檯準備入座</div>
-            <button class="alert-btn" onclick="closeAlert()">我知道啦</button>
-        </div>
     </div>
 
     <script>
@@ -613,204 +329,9 @@
         let allStores = [];
         let refreshInterval;
         let countdown = 30;
-        let currentStoreId = null;
-        let trackedStoreId = null;
-        let trackedTicket = null;
-        let alertPlayed = false;
 
         // Max shops to display (4 columns x 8 rows = 32)
         const MAX_SHOPS = 32;
-
-        // Load tracked ticket from localStorage
-        function loadTrackedTicket() {
-            const saved = localStorage.getItem('sushiro_tracking');
-            if (saved) {
-                const data = JSON.parse(saved);
-                trackedStoreId = data.storeId;
-                trackedTicket = data.ticket;
-                alertPlayed = data.alertPlayed || false;
-            }
-        }
-
-        // Save tracked ticket to localStorage
-        function saveTrackedTicket() {
-            localStorage.setItem('sushiro_tracking', JSON.stringify({
-                storeId: trackedStoreId,
-                ticket: trackedTicket,
-                alertPlayed: alertPlayed
-            }));
-        }
-
-        // Play alert sound
-        function playAlertSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                // Play 3 ding sounds
-                for (let i = 0; i < 3; i++) {
-                    setTimeout(() => {
-                        const oscillator = audioContext.createOscillator();
-                        const gainNode = audioContext.createGain();
-                        oscillator.connect(gainNode);
-                        gainNode.connect(audioContext.destination);
-                        oscillator.frequency.value = 880;
-                        oscillator.type = 'sine';
-                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                        oscillator.start(audioContext.currentTime);
-                        oscillator.stop(audioContext.currentTime + 0.3);
-                    }, i * 400);
-                }
-            } catch (e) {
-                console.log('Audio not supported');
-            }
-        }
-
-        // Show alert
-        function showAlert(title, message) {
-            document.getElementById('alertTitle').textContent = title;
-            document.getElementById('alertMessage').textContent = message;
-            document.getElementById('alertModal').classList.add('show');
-            playAlertSound();
-        }
-
-        // Close alert
-        function closeAlert() {
-            document.getElementById('alertModal').classList.remove('show');
-        }
-
-        // Open ticket modal
-        function openModal(storeId) {
-            currentStoreId = storeId;
-            const store = allStores.find(s => s.id === storeId);
-            if (!store) return;
-
-            document.getElementById('modalStoreName').textContent = store.shop_name;
-            document.getElementById('modalCurrentTickets').textContent = '叫緊: ' + (store.tickets.length > 0 ? store.tickets.join(', ') : '--');
-
-            // Check if already tracking this store
-            if (trackedStoreId === storeId && trackedTicket) {
-                document.getElementById('ticketInput').style.display = 'none';
-                document.querySelector('.modal-confirm').style.display = 'none';
-                document.getElementById('modalSaved').style.display = 'block';
-                document.getElementById('modalSavedNumber').textContent = trackedTicket;
-                updateTrackingStatus(store);
-            } else {
-                document.getElementById('ticketInput').style.display = 'block';
-                document.querySelector('.modal-confirm').style.display = 'block';
-                document.getElementById('modalSaved').style.display = 'none';
-                document.getElementById('ticketInput').value = '';
-            }
-
-            document.getElementById('ticketModal').classList.add('show');
-        }
-
-        // Close modal
-        function closeModal() {
-            document.getElementById('ticketModal').classList.remove('show');
-            currentStoreId = null;
-        }
-
-        // Save ticket
-        function saveTicket() {
-            const input = document.getElementById('ticketInput');
-            const ticket = input.value.trim();
-            if (!ticket) return;
-
-            trackedStoreId = currentStoreId;
-            trackedTicket = ticket;
-            alertPlayed = false;
-            saveTrackedTicket();
-
-            // Update modal display
-            document.getElementById('ticketInput').style.display = 'none';
-            document.querySelector('.modal-confirm').style.display = 'none';
-            document.getElementById('modalSaved').style.display = 'block';
-            document.getElementById('modalSavedNumber').textContent = ticket;
-
-            const store = allStores.find(s => s.id === currentStoreId);
-            if (store) updateTrackingStatus(store);
-
-            // Update card display
-            renderGrid(allStores);
-        }
-
-        // Cancel ticket tracking
-        function cancelTicket() {
-            trackedStoreId = null;
-            trackedTicket = null;
-            alertPlayed = false;
-            localStorage.removeItem('sushiro_tracking');
-            closeModal();
-            renderGrid(allStores);
-        }
-
-        // Update tracking status display
-        function updateTrackingStatus(store) {
-            const statusEl = document.getElementById('modalSavedStatus');
-            if (!store.tickets || store.tickets.length === 0) {
-                statusEl.textContent = '暫無籌號資訊';
-                return;
-            }
-
-            // Find position in queue
-            const ticketNum = parseInt(trackedTicket);
-            const currentTickets = store.tickets.map(t => parseInt(t)).filter(n => !isNaN(n));
-
-            if (currentTickets.length === 0) {
-                statusEl.textContent = '暫無籌號資訊';
-                return;
-            }
-
-            // Find the closest current ticket
-            const minCurrent = Math.min(...currentTickets);
-            const maxCurrent = Math.max(...currentTickets);
-
-            if (ticketNum < minCurrent) {
-                // Before current call
-                const diff = minCurrent - ticketNum;
-                statusEl.textContent = `仲有 ${diff} 張枱到你`;
-            } else if (ticketNum <= maxCurrent) {
-                // Being called now!
-                statusEl.textContent = '🎉 到你啦！快啲去！';
-                statusEl.style.color = 'var(--sushiro-red)';
-                if (!alertPlayed) {
-                    showAlert('到你啦！🎉', '快啲去櫃檯準備入座！');
-                    alertPlayed = true;
-                    saveTrackedTicket();
-                }
-            } else {
-                statusEl.textContent = '已過號';
-                statusEl.style.color = '#999';
-            }
-        }
-
-        // Check all tracked tickets
-        function checkTrackedTickets() {
-            if (!trackedStoreId || !trackedTicket) return;
-
-            const store = allStores.find(s => s.id === trackedStoreId);
-            if (!store || !store.tickets || store.tickets.length === 0) return;
-
-            const ticketNum = parseInt(trackedTicket);
-            const currentTickets = store.tickets.map(t => parseInt(t)).filter(n => !isNaN(n));
-            if (currentTickets.length === 0) return;
-
-            const minCurrent = Math.min(...currentTickets);
-
-            // Check if close (within 10 tables)
-            if (ticketNum <= minCurrent + 10 && ticketNum >= minCurrent) {
-                if (!alertPlayed) {
-                    const diff = minCurrent - ticketNum;
-                    if (diff <= 5) {
-                        showAlert('差唔多到你啦！🔔', `快啲去櫃檯準備入座！`);
-                    } else {
-                        showAlert('快輪到你啦！📢', `仲有約 ${diff} 張枱到你，準備吓啦！`);
-                    }
-                    alertPlayed = true;
-                    saveTrackedTicket();
-                }
-            }
-        }
 
         // Update time display
         function updateTime() {
@@ -823,21 +344,14 @@
         // Create shop card HTML
         function createShopCard(shop) {
             const hasQueue = shop.queue_count > 0;
-            const hasWait = shop.wait > 0;
-            const hasTickets = shop.tickets && shop.tickets.length > 0;
-            const ticketText = hasTickets ? shop.tickets.join(', ') : '';
-            const isTracking = trackedStoreId === shop.id;
 
             return `
-                <div class="shop-card ${hasQueue ? 'has-queue' : ''} ${isTracking ? 'tracking' : ''} fade-in" onclick="openModal(${shop.id})">
-                    ${isTracking ? '<div class="tracking-badge">追蹤中</div>' : ''}
+                <div class="shop-card ${hasQueue ? 'has-queue' : ''} fade-in">
                     <div class="shop-name">${shop.shop_name}</div>
                     <div class="queue-display">
                         <span class="queue-count ${hasQueue ? '' : 'no-queue'}">${shop.queue_count}</span>
                         <span class="queue-unit">組</span>
                     </div>
-                    <div class="wait-time ${hasWait ? 'has-wait' : ''}">${hasWait ? shop.wait + '分' : '-'}</div>
-                    <div class="ticket-numbers ${hasTickets ? 'has-tickets' : ''}">${hasTickets ? ticketText : ''}</div>
                 </div>
             `;
         }
@@ -895,8 +409,7 @@
                     queue_count: store.waitingGroup || 0,
                     id: store.id,
                     wait: store.wait,
-                    status: store.storeStatus,
-                    tickets: []
+                    status: store.storeStatus
                 }));
 
                 // Sort by queue count (descending)
@@ -905,33 +418,10 @@
                 // Limit to MAX_SHOPS
                 allStores = allStores.slice(0, MAX_SHOPS);
 
-                // Render initial data
+                // Render
                 renderGrid(allStores);
                 updateStats(allStores);
                 updateTime();
-
-                // Fetch ticket numbers for each store (in parallel, batch of 10)
-                const batchSize = 10;
-                for (let i = 0; i < allStores.length; i += batchSize) {
-                    const batch = allStores.slice(i, i + batchSize);
-                    const ticketPromises = batch.map(async (store) => {
-                        try {
-                            const ticketUrl = `${CORS_PROXY}${API_BASE}/remote/groupqueues?region=HK&storeid=${store.id}`;
-                            const ticketResponse = await fetch(ticketUrl);
-                            const ticketData = await ticketResponse.json();
-                            store.tickets = ticketData.storeQueue || [];
-                        } catch (e) {
-                            store.tickets = [];
-                        }
-                    });
-                    await Promise.all(ticketPromises);
-                }
-
-                // Re-render with ticket numbers
-                renderGrid(allStores);
-
-                // Check tracked tickets
-                checkTrackedTickets();
 
                 console.log(`✅ 載入成功：${allStores.length} 間店舖`);
             } catch (error) {
@@ -964,7 +454,6 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            loadTrackedTicket();
             fetchData();
             startAutoRefresh();
             updateTime();
