@@ -42,11 +42,11 @@
             min-height: -webkit-fill-available;
         }
 
-        /* Header with Logo */
+        /* Header - Thin Bar */
         .header {
-            background: var(--sushiro-black);
-            padding: 16px 20px;
-            padding-top: max(16px, env(safe-area-inset-top));
+            background: var(--sushiro-red);
+            padding: 4px 10px;
+            padding-top: max(4px, env(safe-area-inset-top));
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -56,68 +56,34 @@
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 6px;
         }
 
         .logo {
-            width: 48px;
-            height: 48px;
-            background: var(--sushiro-red);
-            border-radius: 12px;
+            width: 20px;
+            height: 20px;
+            background: var(--sushiro-white);
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-        }
-
-        .brand-text {
-            color: var(--sushiro-white);
+            font-size: 12px;
         }
 
         .brand-name {
-            font-size: 22px;
+            font-size: 11px;
             font-weight: 900;
-            letter-spacing: 2px;
-        }
-
-        .brand-subtitle {
-            font-size: 10px;
-            opacity: 0.7;
+            color: var(--sushiro-white);
             letter-spacing: 1px;
         }
 
         .time-display {
             color: var(--sushiro-white);
-            text-align: right;
-        }
-
-        .current-time {
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 11px;
+            font-weight: 600;
             font-variant-numeric: tabular-nums;
+            opacity: 0.9;
         }
-
-        .update-label {
-            font-size: 10px;
-            opacity: 0.6;
-        }
-
-        /* Stats Bar */
-        .stats-bar {
-            background: var(--sushiro-red);
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-around;
-            flex-shrink: 0;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 20px;
-            font-weight: 900;
             color: var(--sushiro-white);
         }
 
@@ -518,40 +484,14 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
+    <!-- Header - Thin Bar -->
     <header class="header">
         <div class="logo-section">
             <div class="logo">🍣</div>
-            <div class="brand-text">
-                <div class="brand-name">壽司郎</div>
-                <div class="brand-subtitle">SUSHIRO</div>
-            </div>
+            <div class="brand-name">壽司郎</div>
         </div>
-        <div class="time-display">
-            <div class="current-time" id="currentTime">--:--</div>
-            <div class="update-label">即時排隊</div>
-        </div>
+        <div class="time-display" id="currentTime">--:--</div>
     </header>
-
-    <!-- Stats Bar -->
-    <div class="stats-bar">
-        <div class="stat-item">
-            <div class="stat-value" id="totalCount">-</div>
-            <div class="stat-label">總店舖</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value" id="freeCount">-</div>
-            <div class="stat-label">即場有位</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value" id="busyCount">-</div>
-            <div class="stat-label">繁忙</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value" id="avgWait">-</div>
-            <div class="stat-label">平均等候</div>
-        </div>
-    </div>
 
     <!-- Grid Container -->
     <div class="grid-container">
@@ -858,21 +798,6 @@
             grid.innerHTML = stores.map(store => createShopCard(store)).join('');
         }
 
-        // Update stats
-        function updateStats(stores) {
-            const total = stores.length;
-            const free = stores.filter(s => s.queue_count === 0).length;
-            const busy = stores.filter(s => s.queue_count > 10).length;
-            const avgWait = stores.length > 0
-                ? Math.round(stores.reduce((sum, s) => sum + s.wait, 0) / stores.length)
-                : 0;
-
-            document.getElementById('totalCount').textContent = total;
-            document.getElementById('freeCount').textContent = free;
-            document.getElementById('busyCount').textContent = busy;
-            document.getElementById('avgWait').textContent = `${avgWait}分`;
-        }
-
         // Fetch data from API
         async function fetchData() {
             try {
@@ -907,7 +832,6 @@
 
                 // Render initial data
                 renderGrid(allStores);
-                updateStats(allStores);
                 updateTime();
 
                 // Fetch ticket numbers for each store (in parallel, batch of 10)
