@@ -481,6 +481,50 @@
             border-radius: 4px;
             font-weight: 700;
         }
+
+        /* Tracking Reference Bar */
+        .tracking-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--sushiro-red);
+            padding: 8px 12px;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+            z-index: 100;
+        }
+
+        .tracking-bar-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .tracking-bar-store {
+            font-weight: 700;
+        }
+
+        .tracking-bar-divider {
+            opacity: 0.5;
+        }
+
+        .tracking-bar-ticket {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .tracking-bar-status {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        /* Adjust grid when tracking bar is visible */
+        body.has-tracking .footer {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -509,6 +553,16 @@
         <div class="footer-title">壽司郎排隊情況</div>
         <div class="footer-refresh" id="refreshTimer">每30秒更新</div>
         <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">🔄</button>
+    </div>
+
+    <!-- Tracking Reference Bar -->
+    <div class="tracking-bar" id="trackingBar" style="display:none">
+        <div class="tracking-bar-content">
+            <span class="tracking-bar-store" id="trackingBarStore">--</span>
+            <span class="tracking-bar-divider">|</span>
+            <span class="tracking-bar-ticket" id="trackingBarTicket">籌號: --</span>
+            <span class="tracking-bar-status" id="trackingBarStatus">--</span>
+        </div>
     </div>
 
     <!-- Ticket Modal -->
@@ -570,6 +624,7 @@
                 trackedTicket = data.ticket;
                 alertPlayed = data.alertPlayed || false;
             }
+            updateTrackingBar();
         }
 
         // Save tracked ticket to localStorage
@@ -616,6 +671,47 @@
         // Close alert
         function closeAlert() {
             document.getElementById('alertModal').classList.remove('show');
+        }
+
+        // Update tracking reference bar
+        function updateTrackingBar() {
+            const bar = document.getElementById('trackingBar');
+            if (!trackedStoreId || !trackedTicket) {
+                bar.style.display = 'none';
+                document.body.classList.remove('has-tracking');
+                return;
+            }
+
+            const store = allStores.find(s => s.id === trackedStoreId);
+            if (!store) {
+                bar.style.display = 'none';
+                document.body.classList.remove('has-tracking');
+                return;
+            }
+
+            bar.style.display = 'block';
+            document.body.classList.add('has-tracking');
+            document.getElementById('trackingBarStore').textContent = store.shop_name;
+            document.getElementById('trackingBarTicket').textContent = '籌號: ' + trackedTicket;
+
+            // Calculate status
+            if (store.tickets && store.tickets.length > 0) {
+                const ticketNum = parseInt(trackedTicket);
+                const currentTickets = store.tickets.map(t => parseInt(t)).filter(n => !isNaN(n));
+                if (currentTickets.length > 0) {
+                    const minCurrent = Math.min(...currentTickets);
+                    if (ticketNum <= minCurrent) {
+                        document.getElementById('trackingBarStatus').textContent = '到你啦！';
+                    } else {
+                        const diff = ticketNum - minCurrent;
+                        document.getElementById('trackingBarStatus').textContent = '仲有 ' + diff + ' 張';
+                    }
+                } else {
+                    document.getElementById('trackingBarStatus').textContent = '等待中';
+                }
+            } else {
+                document.getElementById('trackingBarStatus').textContent = '等待中';
+            }
         }
 
         // Open ticket modal
@@ -672,6 +768,12 @@
 
             // Update card display
             renderGrid(allStores);
+
+            // Update tracking bar
+            updateTrackingBar();
+
+            // Close modal
+            closeModal();
         }
 
         // Cancel ticket tracking
@@ -682,6 +784,7 @@
             localStorage.removeItem('sushiro_tracking');
             closeModal();
             renderGrid(allStores);
+            updateTrackingBar();
         }
 
         // Update tracking status display
@@ -750,6 +853,9 @@
                     saveTrackedTicket();
                 }
             }
+
+            // Update tracking bar
+            updateTrackingBar();
         }
 
         // Update time display
