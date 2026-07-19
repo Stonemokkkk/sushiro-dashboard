@@ -195,7 +195,9 @@
         }
 
         .queue {
-            text-align: right;
+            display: flex;
+            align-items: baseline;
+            gap: 2px;
         }
 
         .queue-num {
@@ -249,7 +251,8 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: #1a1a1a;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+            border-top: 3px solid var(--red);
             padding: 10px 14px;
             padding-bottom: max(10px, env(safe-area-inset-bottom));
             z-index: 100;
@@ -260,33 +263,72 @@
 
         .tracking-bar-content {
             color: white;
-            text-align: center;
         }
 
         .tracking-bar-top {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin-bottom: 4px;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .tracking-bar-main {
+            flex: 1;
+            text-align: center;
         }
 
         .tracking-bar-store {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 900;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
 
         .tracking-bar-ticket {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 900;
-            color: #f5c518;
+            color: var(--red);
+            text-shadow: 0 0 8px rgba(230,57,70,0.5);
             font-variant-numeric: tabular-nums;
         }
 
         .tracking-bar-status {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             color: #f5c518;
+        }
+
+        .tracking-bar-cancel {
+            background: #c1121f;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .tracking-bar-cancel:active { background: #a0101a; }
+
+        .tracking-bar-alert {
+            background: #f5c518;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .tracking-bar-alert:active { background: #d4a810; }
+
+        .tracking-bar-alert.active {
+            background: var(--red);
+            color: white;
         }
 
         .tracking-bar-tickets {
@@ -297,17 +339,23 @@
         }
 
         .tracking-bar-tickets .ticket {
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 700;
             background: #333;
             color: #ccc;
-            padding: 2px 6px;
-            border-radius: 3px;
+            padding: 3px 8px;
+            border-radius: 4px;
         }
 
         .tracking-bar-tickets .ticket.mobile {
             background: #1e3a5f;
             color: #7dd3fc;
+        }
+
+        .tracking-bar-tickets .ticket.tracked {
+            background: var(--red);
+            color: white;
+            font-weight: 900;
         }
 
         /* Refresh Button */
@@ -495,9 +543,13 @@
     <div class="tracking-bar" id="trackingBar">
         <div class="tracking-bar-content">
             <div class="tracking-bar-top">
-                <span class="tracking-bar-store" id="trackingBarStore">--</span>
-                <span class="tracking-bar-ticket" id="trackingBarTicket">--</span>
-                <span class="tracking-bar-status" id="trackingBarStatus">--</span>
+                <button class="tracking-bar-alert" id="trackingBarAlert" onclick="toggleAlert()">提示</button>
+                <div class="tracking-bar-main">
+                    <div class="tracking-bar-store" id="trackingBarStore">--</div>
+                    <div class="tracking-bar-ticket" id="trackingBarTicket">--</div>
+                    <div class="tracking-bar-status" id="trackingBarStatus">--</div>
+                </div>
+                <button class="tracking-bar-cancel" onclick="cancelTicket()">取消</button>
             </div>
             <div class="tracking-bar-tickets" id="trackingBarTickets"></div>
         </div>
@@ -551,6 +603,8 @@
         let trackedTicket = null;
         let alertPlayed = false;
         let currentRegion = 'all';
+        let alertEnabled = false;
+        let alertCountdown = 10;
 
         // Region filter
         function filterRegion(region) {
@@ -828,13 +882,13 @@
 
             const minCurrent = Math.min(...currentTickets);
 
-            if (ticketNum <= minCurrent + 10 && ticketNum >= minCurrent) {
+            if (alertEnabled && ticketNum <= minCurrent + alertCountdown && ticketNum >= minCurrent) {
                 if (!alertPlayed) {
                     const diff = minCurrent - ticketNum;
                     if (diff <= 5) {
-                        showAlert('差唔多到你啦！🔔', '快啲去櫃檯準備入座！');
+                        showAlert('差唔多到你啦!', '快啲去櫃檯準備入座!');
                     } else {
-                        showAlert('快輪到你啦！📢', `仲有約 ${diff} 張枱到你，準備吓啦！`);
+                        showAlert('快輪到你啦!', `仲有約 ${diff} 張枱到你，準備吓啦!`);
                     }
                     alertPlayed = true;
                     saveTrackedTicket();
@@ -849,6 +903,22 @@
             const now = new Date();
             document.getElementById('currentTime').textContent =
                 now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        }
+
+        // Toggle alert notification
+        function toggleAlert() {
+            alertEnabled = !alertEnabled;
+            const btn = document.getElementById('trackingBarAlert');
+            if (alertEnabled) {
+                btn.classList.add('active');
+                btn.textContent = '提示ON';
+                showAlert('提示已開啟', `當排到你嘅籌號差 ${alertCountdown} 張以內嗰陣，會彈出提示同響聲。`);
+            } else {
+                btn.classList.remove('active');
+                btn.textContent = '提示';
+                alertPlayed = false;
+                saveTrackedTicket();
+            }
         }
 
         // Fetch data
@@ -871,7 +941,8 @@
                 const regionOrder = { '香港島': 0, '九龍': 1, '新界': 2 };
                 allStores.sort((a, b) => {
                     const rd = (regionOrder[a.region] || 3) - (regionOrder[b.region] || 3);
-                    return rd !== 0 ? rd : b.queue_count - a.queue_count;
+                    if (rd !== 0) return rd;
+                    return b.wait - a.wait;
                 });
 
                 renderGrid();
