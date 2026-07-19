@@ -544,6 +544,47 @@
         body.has-tracking .footer {
             display: none;
         }
+
+        /* Region Tabs */
+        .region-tabs {
+            display: flex;
+            background: #222;
+            padding: 0;
+            gap: 0;
+            flex-shrink: 0;
+        }
+
+        .region-tab {
+            flex: 1;
+            padding: 8px 4px;
+            border: none;
+            background: #333;
+            color: #888;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .region-tab.active {
+            color: white;
+        }
+
+        .region-tab.hk.active {
+            background: #e63946;
+        }
+
+        .region-tab.kc.active {
+            background: #457b9d;
+        }
+
+        .region-tab.nt.active {
+            background: #2a9d8f;
+        }
+
+        .region-tab:active {
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -555,6 +596,14 @@
         </div>
         <div class="time-display" id="currentTime">--:--</div>
     </header>
+
+    <!-- Region Tabs -->
+    <div class="region-tabs">
+        <button class="region-tab active" data-region="all" onclick="filterRegion('all')">全部</button>
+        <button class="region-tab hk" data-region="香港島" onclick="filterRegion('香港島')">香港島</button>
+        <button class="region-tab kc" data-region="九龍" onclick="filterRegion('九龍')">九龍</button>
+        <button class="region-tab nt" data-region="新界" onclick="filterRegion('新界')">新界</button>
+    </div>
 
     <!-- Grid Container -->
     <div class="grid-container">
@@ -630,9 +679,33 @@
         let trackedStoreId = null;
         let trackedTicket = null;
         let alertPlayed = false;
+        let currentRegion = 'all';
 
         // Max shops to display (4 columns x 11 rows = 44)
         const MAX_SHOPS = 50;
+
+        // Filter by region
+        function filterRegion(region) {
+            currentRegion = region;
+
+            // Update tab active state
+            document.querySelectorAll('.region-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-region="${region}"]`).classList.add('active');
+
+            // Filter and render
+            renderFilteredGrid();
+        }
+
+        // Render filtered grid
+        function renderFilteredGrid() {
+            let filtered = allStores;
+            if (currentRegion !== 'all') {
+                filtered = allStores.filter(s => s.region === currentRegion);
+            }
+            renderGrid(filtered);
+        }
 
         // Load tracked ticket from localStorage
         function loadTrackedTicket() {
@@ -786,7 +859,7 @@
             if (store) updateTrackingStatus(store);
 
             // Update card display
-            renderGrid(allStores);
+            renderFilteredGrid();
 
             // Update tracking bar
             updateTrackingBar();
@@ -802,7 +875,7 @@
             alertPlayed = false;
             localStorage.removeItem('sushiro_tracking');
             closeModal();
-            renderGrid(allStores);
+            renderFilteredGrid();
             updateTrackingBar();
         }
 
@@ -971,7 +1044,7 @@
                 allStores = allStores.slice(0, MAX_SHOPS);
 
                 // Render initial data
-                renderGrid(allStores);
+                renderFilteredGrid();
                 updateTime();
 
                 // Fetch ticket numbers for each store (in parallel, batch of 10)
@@ -992,7 +1065,7 @@
                 }
 
                 // Re-render with ticket numbers
-                renderGrid(allStores);
+                renderFilteredGrid();
 
                 // Check tracked tickets
                 checkTrackedTickets();
