@@ -141,15 +141,13 @@
         .store-card.hk::before { background: var(--hk); }
         .store-card.kc::before { background: var(--kc); }
         .store-card.nt::before { background: var(--nt); }
-        .store-card.tracking::before { background: #f5c518 !important; height: 100%; }
-        .store-card.tracking { border: 2px solid #f5c518; }
 
         .tracking-badge {
             position: absolute;
             top: 6px;
             right: 6px;
-            background: #f5c518;
-            color: #1a1a1a;
+            background: var(--red);
+            color: white;
             font-size: 9px;
             padding: 1px 5px;
             border-radius: 3px;
@@ -214,26 +212,16 @@
 
         /* Ticket Numbers */
         .tickets {
-            padding-top: 6px;
-            border-top: 1px solid #eee;
-        }
-
-        .ticket-row {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin-bottom: 2px;
-        }
-
-        .ticket-row-label {
-            font-size: 9px;
-            color: #999;
-            text-align: center;
-            margin-bottom: 2px;
+            gap: 6px;
+            padding-top: 6px;
+            border-top: 1px solid #eee;
+            flex-wrap: wrap;
         }
 
         .ticket {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             color: var(--text);
             font-variant-numeric: tabular-nums;
@@ -261,9 +249,9 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--red);
-            padding: 8px 12px;
-            padding-bottom: max(8px, env(safe-area-inset-bottom));
+            background: #1a1a1a;
+            padding: 10px 14px;
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
             z-index: 100;
             display: none;
         }
@@ -271,19 +259,56 @@
         .tracking-bar.show { display: block; }
 
         .tracking-bar-content {
+            color: white;
+            text-align: center;
+        }
+
+        .tracking-bar-top {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            color: white;
-            font-size: 13px;
-            font-weight: 600;
+            gap: 6px;
+            margin-bottom: 4px;
         }
 
-        .tracking-bar-store { font-weight: 700; }
-        .tracking-bar-divider { opacity: 0.5; }
-        .tracking-bar-ticket { font-variant-numeric: tabular-nums; }
-        .tracking-bar-status { font-size: 12px; opacity: 0.9; }
+        .tracking-bar-store {
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .tracking-bar-ticket {
+            font-size: 20px;
+            font-weight: 900;
+            color: #f5c518;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .tracking-bar-status {
+            font-size: 14px;
+            font-weight: 700;
+            color: #f5c518;
+        }
+
+        .tracking-bar-tickets {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tracking-bar-tickets .ticket {
+            font-size: 13px;
+            font-weight: 600;
+            background: #333;
+            color: #ccc;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .tracking-bar-tickets .ticket.mobile {
+            background: #1e3a5f;
+            color: #7dd3fc;
+        }
 
         /* Refresh Button */
         .refresh-btn {
@@ -469,10 +494,12 @@
     <!-- Tracking Bar -->
     <div class="tracking-bar" id="trackingBar">
         <div class="tracking-bar-content">
-            <span class="tracking-bar-store" id="trackingBarStore">--</span>
-            <span class="tracking-bar-divider">|</span>
-            <span class="tracking-bar-ticket" id="trackingBarTicket">籌號: --</span>
-            <span class="tracking-bar-status" id="trackingBarStatus">--</span>
+            <div class="tracking-bar-top">
+                <span class="tracking-bar-store" id="trackingBarStore">--</span>
+                <span class="tracking-bar-ticket" id="trackingBarTicket">--</span>
+                <span class="tracking-bar-status" id="trackingBarStatus">--</span>
+            </div>
+            <div class="tracking-bar-tickets" id="trackingBarTickets"></div>
         </div>
     </div>
 
@@ -562,11 +589,7 @@
 
             const isTracking = trackedStoreId === store.id;
             const regionClass = getRegionClass(store.region);
-
-            // Split tickets: mobile (8xxx) and others
             const allTickets = store.tickets || [];
-            const mobileTickets = allTickets.filter(t => t.startsWith('8'));
-            const otherTickets = allTickets.filter(t => !t.startsWith('8'));
 
             return `
                 <div class="store-card ${regionClass} ${isTracking ? 'tracking' : ''}" onclick="openModal(${store.id})">
@@ -583,25 +606,11 @@
                         </div>
                     </div>
                     <div class="tickets">
-                        ${mobileTickets.length > 0 ? `
-                            <div class="ticket-row-label">📱 電話排隊</div>
-                            <div class="ticket-row">
-                                ${mobileTickets.map(t => {
-                                    const isTracked = trackedTicket && t === trackedTicket;
-                                    return `<span class="ticket mobile ${isTracked ? 'tracked' : ''}">${t}</span>`;
-                                }).join('')}
-                            </div>
-                        ` : ''}
-                        ${otherTickets.length > 0 ? `
-                            <div class="ticket-row-label">🎫 現場排隊</div>
-                            <div class="ticket-row">
-                                ${otherTickets.map(t => {
-                                    const isTracked = trackedTicket && t === trackedTicket;
-                                    return `<span class="ticket ${isTracked ? 'tracked' : ''}">${t}</span>`;
-                                }).join('')}
-                            </div>
-                        ` : ''}
-                        ${allTickets.length === 0 ? '<div class="ticket-row"><span class="ticket empty">-</span></div>' : ''}
+                        ${allTickets.length > 0 ? allTickets.map(t => {
+                            const isTracked = trackedTicket && t === trackedTicket;
+                            const isMobile = t.startsWith('8');
+                            return `<span class="ticket ${isMobile ? 'mobile' : ''} ${isTracked ? 'tracked' : ''}">${t}</span>`;
+                        }).join('') : '<span class="ticket empty">-</span>'}
                     </div>
                 </div>
             `;
@@ -630,15 +639,16 @@
 
             bar.classList.add('show');
             document.getElementById('trackingBarStore').textContent = store.shop_name;
-            document.getElementById('trackingBarTicket').textContent = '籌號: ' + trackedTicket;
+            document.getElementById('trackingBarTicket').textContent = trackedTicket;
 
+            // Status
             if (store.tickets && store.tickets.length > 0) {
                 const ticketNum = parseInt(trackedTicket);
                 const currentTickets = store.tickets.map(t => parseInt(t)).filter(n => !isNaN(n));
                 if (currentTickets.length > 0) {
                     const minCurrent = Math.min(...currentTickets);
                     if (ticketNum <= minCurrent) {
-                        document.getElementById('trackingBarStatus').textContent = '到你啦！';
+                        document.getElementById('trackingBarStatus').textContent = '到你啦!';
                     } else {
                         document.getElementById('trackingBarStatus').textContent = '仲有 ' + (ticketNum - minCurrent) + ' 張';
                     }
@@ -647,6 +657,18 @@
                 }
             } else {
                 document.getElementById('trackingBarStatus').textContent = '等待中';
+            }
+
+            // Show all tickets
+            const ticketsContainer = document.getElementById('trackingBarTickets');
+            if (store.tickets && store.tickets.length > 0) {
+                ticketsContainer.innerHTML = store.tickets.map(t => {
+                    const isTracked = t === trackedTicket;
+                    const isMobile = t.startsWith('8');
+                    return `<span class="ticket ${isMobile ? 'mobile' : ''} ${isTracked ? 'tracked' : ''}">${t}</span>`;
+                }).join('');
+            } else {
+                ticketsContainer.innerHTML = '';
             }
         }
 
