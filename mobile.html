@@ -141,14 +141,15 @@
         .store-card.hk::before { background: var(--hk); }
         .store-card.kc::before { background: var(--kc); }
         .store-card.nt::before { background: var(--nt); }
-        .store-card.tracking { border: 2px solid var(--red); }
+        .store-card.tracking::before { background: #f5c518 !important; height: 100%; }
+        .store-card.tracking { border: 2px solid #f5c518; }
 
         .tracking-badge {
             position: absolute;
             top: 6px;
             right: 6px;
-            background: var(--red);
-            color: white;
+            background: #f5c518;
+            color: #1a1a1a;
             font-size: 9px;
             padding: 1px 5px;
             border-radius: 3px;
@@ -213,21 +214,46 @@
 
         /* Ticket Numbers */
         .tickets {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
             padding-top: 6px;
             border-top: 1px solid #eee;
         }
 
+        .ticket-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 2px;
+        }
+
+        .ticket-row-label {
+            font-size: 9px;
+            color: #999;
+            text-align: center;
+            margin-bottom: 2px;
+        }
+
         .ticket {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 700;
             color: var(--text);
             font-variant-numeric: tabular-nums;
+            background: #f0f0f0;
+            padding: 1px 5px;
+            border-radius: 3px;
         }
 
-        .ticket.empty { color: #ccc; font-weight: 400; }
+        .ticket.mobile {
+            background: #e8f4fd;
+            color: #0369a1;
+        }
+
+        .ticket.tracked {
+            background: #f5c518;
+            color: #1a1a1a;
+            font-weight: 900;
+        }
+
+        .ticket.empty { color: #ccc; font-weight: 400; background: transparent; }
 
         /* Tracking Bar */
         .tracking-bar {
@@ -328,10 +354,15 @@
             padding: 6px; background: #f5f5f5; border-radius: 6px;
         }
 
-        .modal-input-group { display: flex; gap: 6px; }
+        .modal-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
 
         .modal-input {
-            flex: 1; padding: 10px 12px;
+            width: 100px; padding: 10px 12px;
             border: 2px solid #e0e0e0; border-radius: 8px;
             font-size: 18px; font-weight: 700;
             text-align: center;
@@ -341,8 +372,9 @@
 
         .modal-confirm {
             background: var(--red); color: white; border: none;
-            border-radius: 8px; padding: 10px 18px;
+            border-radius: 8px; padding: 10px 24px;
             font-size: 15px; font-weight: 700; cursor: pointer;
+            width: 100%;
         }
 
         .modal-confirm:active { background: var(--red-dark); }
@@ -528,13 +560,13 @@
         function buildCard(store) {
             if (!store) return '<div></div>';
 
-            const hasQueue = store.queue_count > 0;
             const isTracking = trackedStoreId === store.id;
             const regionClass = getRegionClass(store.region);
 
-            // Pad tickets to 3
-            const tickets = [...(store.tickets || [])];
-            while (tickets.length < 3) tickets.push('');
+            // Split tickets: mobile (8xxx) and others
+            const allTickets = store.tickets || [];
+            const mobileTickets = allTickets.filter(t => t.startsWith('8'));
+            const otherTickets = allTickets.filter(t => !t.startsWith('8'));
 
             return `
                 <div class="store-card ${regionClass} ${isTracking ? 'tracking' : ''}" onclick="openModal(${store.id})">
@@ -551,9 +583,25 @@
                         </div>
                     </div>
                     <div class="tickets">
-                        <span class="ticket ${tickets[0] ? '' : 'empty'}">${tickets[0] || '-'}</span>
-                        <span class="ticket ${tickets[1] ? '' : 'empty'}">${tickets[1] || '-'}</span>
-                        <span class="ticket ${tickets[2] ? '' : 'empty'}">${tickets[2] || '-'}</span>
+                        ${mobileTickets.length > 0 ? `
+                            <div class="ticket-row-label">📱 電話排隊</div>
+                            <div class="ticket-row">
+                                ${mobileTickets.map(t => {
+                                    const isTracked = trackedTicket && t === trackedTicket;
+                                    return `<span class="ticket mobile ${isTracked ? 'tracked' : ''}">${t}</span>`;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+                        ${otherTickets.length > 0 ? `
+                            <div class="ticket-row-label">🎫 現場排隊</div>
+                            <div class="ticket-row">
+                                ${otherTickets.map(t => {
+                                    const isTracked = trackedTicket && t === trackedTicket;
+                                    return `<span class="ticket ${isTracked ? 'tracked' : ''}">${t}</span>`;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+                        ${allTickets.length === 0 ? '<div class="ticket-row"><span class="ticket empty">-</span></div>' : ''}
                     </div>
                 </div>
             `;
