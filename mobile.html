@@ -32,6 +32,7 @@
         html, body {
             height: 100%;
             overflow: hidden;
+            overscroll-behavior: none;
         }
 
         body {
@@ -93,20 +94,44 @@
             margin-top: 2px;
         }
 
-        /* Grid Container */
+        /* Grid Container - scrollable */
         .grid-container {
             flex: 1;
             background: var(--sushiro-gray);
             padding: 8px;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+            scroll-behavior: smooth;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(11, 1fr);
-            gap: 6px;
-            height: 100%;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding-bottom: 12px;
+        }
+
+        /* Rubber band bounce */
+        .grid-container.bounce-top {
+            animation: bounceTop 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        }
+
+        .grid-container.bounce-bottom {
+            animation: bounceBottom 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        }
+
+        @keyframes bounceTop {
+            0% { transform: translateY(-30px); }
+            60% { transform: translateY(5px); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes bounceBottom {
+            0% { transform: translateY(30px); }
+            60% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
         }
 
         /* Shop Card */
@@ -1099,12 +1124,53 @@
             }, 1000);
         }
 
+        // Rubber band bounce on scroll
+        function setupBounceScroll() {
+            const container = document.getElementById('grid');
+            if (!container) return;
+
+            let startY = 0;
+            let isBouncing = false;
+
+            container.addEventListener('touchstart', (e) => {
+                if (!isBouncing) {
+                    startY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+
+            container.addEventListener('touchmove', (e) => {
+                const currentY = e.touches[0].clientY;
+                const diff = currentY - startY;
+                const atTop = container.scrollTop <= 0;
+                const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
+
+                if ((atTop && diff > 0) || (atBottom && diff < 0)) {
+                    e.preventDefault();
+                    container.style.transform = `translateY(${diff * 0.4}px)`;
+                }
+            }, { passive: false });
+
+            container.addEventListener('touchend', () => {
+                const transform = container.style.transform;
+                const match = transform.match(/translateY\((.+?)px\)/);
+                if (match) {
+                    const val = parseFloat(match[1]);
+                    container.style.transition = 'transform 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97)';
+                    container.style.transform = 'translateY(0)';
+                    setTimeout(() => {
+                        container.style.transition = '';
+                    }, 300);
+                }
+            }, { passive: true });
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadTrackedTicket();
             fetchData();
             startAutoRefresh();
             updateTime();
+            setupBounceScroll();
         });
     </script>
 </body>
