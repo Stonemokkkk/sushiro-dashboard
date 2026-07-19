@@ -2,9 +2,10 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a1a">
     <title>壽司郎排隊情況</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,145 +16,221 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
         }
 
         :root {
-            --bg-display: #f5f5f5;
-            --text-primary: #2d2d2d;
-            --text-secondary: #6b6b6b;
-            --border-color: #d0d0d0;
-            --divider-color: #c0c0c0;
+            --sushiro-black: #1a1a1a;
+            --sushiro-red: #e63946;
+            --sushiro-red-dark: #c1121f;
+            --sushiro-white: #ffffff;
+            --sushiro-gray: #f5f5f5;
+            --sushiro-text: #2d2d2d;
+            --sushiro-border: #3d3d3d;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
         }
 
         body {
-            background: var(--bg-display);
+            background: var(--sushiro-black);
+            display: flex;
+            flex-direction: column;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            min-height: -webkit-fill-available;
         }
 
-        /* Main Grid Container */
-        .display-container {
+        /* Header with Logo */
+        .header {
+            background: var(--sushiro-black);
+            padding: 16px 20px;
+            padding-top: max(16px, env(safe-area-inset-top));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: var(--sushiro-red);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .brand-text {
+            color: var(--sushiro-white);
+        }
+
+        .brand-name {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .brand-subtitle {
+            font-size: 10px;
+            opacity: 0.7;
+            letter-spacing: 1px;
+        }
+
+        .time-display {
+            color: var(--sushiro-white);
+            text-align: right;
+        }
+
+        .current-time {
+            font-size: 24px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .update-label {
+            font-size: 10px;
+            opacity: 0.6;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            background: var(--sushiro-red);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-around;
+            flex-shrink: 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--sushiro-white);
+        }
+
+        .stat-label {
+            font-size: 9px;
+            color: rgba(255,255,255,0.8);
+            margin-top: 2px;
+        }
+
+        /* Grid Container */
+        .grid-container {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 12px;
-            padding-bottom: 60px;
+            background: var(--sushiro-gray);
+            padding: 8px;
+            overflow: hidden;
         }
 
-        /* Grid System: 4 columns */
         .grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            flex: 1;
-            gap: 0;
+            grid-template-rows: repeat(8, 1fr);
+            gap: 6px;
+            height: 100%;
         }
 
-        /* Column with dotted divider */
-        .column {
+        /* Shop Card */
+        .shop-card {
+            background: var(--sushiro-white);
+            border-radius: 8px;
+            padding: 6px 8px;
             display: flex;
             flex-direction: column;
-            border-right: 1px dotted var(--divider-color);
-            padding: 0 6px;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
         }
 
-        .column:last-child {
-            border-right: none;
+        .shop-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--sushiro-border);
         }
 
-        /* Data Cell Component */
-        .data-cell {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 4px 2px;
-            border-bottom: 1px dotted var(--divider-color);
-            min-height: 0;
+        .shop-card.has-queue::before {
+            background: var(--sushiro-red);
         }
 
-        .data-cell:last-child {
-            border-bottom: none;
-        }
-
-        /* Shop Name - left aligned */
         .shop-name {
-            font-size: 11px;
-            color: var(--text-primary);
-            text-align: left;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--sushiro-text);
             line-height: 1.2;
-            margin-bottom: 2px;
-            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        /* Auto-scaling for long names */
-        .shop-name.auto-scale {
-            font-size: clamp(8px, 2.2vw, 11px);
-        }
-
-        /* Queue Count Row */
-        .queue-row {
+        .queue-display {
             display: flex;
             align-items: baseline;
             justify-content: flex-end;
             gap: 1px;
         }
 
-        /* Queue Count Number - right aligned, large font */
         .queue-count {
-            font-size: 20px;
-            font-weight: 400;
-            color: var(--text-primary);
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--sushiro-text);
             line-height: 1;
         }
 
-        .queue-count.has-queue {
-            font-weight: 700;
-        }
-
         .queue-count.no-queue {
+            color: #999;
             font-weight: 400;
-            color: var(--text-secondary);
         }
 
-        /* Unit "組" - small font, next to number */
         .queue-unit {
             font-size: 10px;
-            font-weight: 400;
-            color: var(--text-secondary);
+            color: #666;
         }
 
-        /* Footer Bar */
-        .footer-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #3d3d3d;
-            color: #ffffff;
-            padding: 10px 16px;
+        /* Footer */
+        .footer {
+            background: var(--sushiro-black);
+            padding: 12px 20px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 100;
+            flex-shrink: 0;
         }
 
         .footer-title {
-            font-size: 13px;
+            color: var(--sushiro-white);
+            font-size: 12px;
             font-weight: 500;
         }
 
-        .footer-time {
-            font-size: 13px;
-            font-weight: 500;
-            font-variant-numeric: tabular-nums;
+        .footer-refresh {
+            color: var(--sushiro-white);
+            font-size: 11px;
+            opacity: 0.7;
         }
 
         /* Loading State */
         .loading-state {
-            flex: 1;
+            grid-column: 1 / -1;
+            grid-row: 1 / -1;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -164,8 +241,8 @@
         .loading-spinner {
             width: 32px;
             height: 32px;
-            border: 2px solid var(--border-color);
-            border-top-color: var(--text-primary);
+            border: 2px solid var(--sushiro-border);
+            border-top-color: var(--sushiro-red);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -176,19 +253,7 @@
 
         .loading-text {
             font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        /* Refresh indicator */
-        .refresh-indicator {
-            position: fixed;
-            top: 8px;
-            right: 8px;
-            font-size: 10px;
-            color: var(--text-secondary);
-            background: rgba(255,255,255,0.8);
-            padding: 4px 8px;
-            border-radius: 4px;
+            color: #666;
         }
 
         /* Animation */
@@ -203,11 +268,43 @@
     </style>
 </head>
 <body>
-    <!-- Refresh Indicator -->
-    <div class="refresh-indicator" id="refreshIndicator">30s</div>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">🍣</div>
+            <div class="brand-text">
+                <div class="brand-name">壽司郎</div>
+                <div class="brand-subtitle">SUSHIRO</div>
+            </div>
+        </div>
+        <div class="time-display">
+            <div class="current-time" id="currentTime">--:--</div>
+            <div class="update-label">即時排隊</div>
+        </div>
+    </header>
 
-    <!-- Main Display Container -->
-    <div class="display-container">
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value" id="totalCount">-</div>
+            <div class="stat-label">總店舖</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="freeCount">-</div>
+            <div class="stat-label">即場有位</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="busyCount">-</div>
+            <div class="stat-label">繁忙</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="avgWait">-</div>
+            <div class="stat-label">平均等候</div>
+        </div>
+    </div>
+
+    <!-- Grid Container -->
+    <div class="grid-container">
         <div class="grid" id="grid">
             <!-- Loading State -->
             <div class="loading-state" id="loadingState">
@@ -217,10 +314,10 @@
         </div>
     </div>
 
-    <!-- Footer Bar -->
-    <div class="footer-bar">
+    <!-- Footer -->
+    <div class="footer">
         <div class="footer-title">壽司郎排隊情況</div>
-        <div class="footer-time" id="footerTime">--:--</div>
+        <div class="footer-refresh" id="refreshTimer">每30秒更新</div>
     </div>
 
     <script>
@@ -236,26 +333,30 @@
         // Max shops to display (4 columns x 8 rows = 32)
         const MAX_SHOPS = 32;
 
-        // Create data cell HTML
-        function createDataCell(shop) {
-            const hasQueue = shop.queue_count > 0;
-            const countClass = hasQueue ? 'has-queue' : 'no-queue';
+        // Update time display
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('currentTime').textContent = `${hours}:${minutes}`;
+        }
 
-            // Auto-scale for long shop names (more than 6 characters)
-            const nameClass = shop.shop_name.length > 6 ? 'auto-scale' : '';
+        // Create shop card HTML
+        function createShopCard(shop) {
+            const hasQueue = shop.queue_count > 0;
 
             return `
-                <div class="data-cell fade-in">
-                    <div class="shop-name ${nameClass}">${shop.shop_name}</div>
-                    <div class="queue-row">
-                        <span class="queue-count ${countClass}">${shop.queue_count}</span>
+                <div class="shop-card ${hasQueue ? 'has-queue' : ''} fade-in">
+                    <div class="shop-name">${shop.shop_name}</div>
+                    <div class="queue-display">
+                        <span class="queue-count ${hasQueue ? '' : 'no-queue'}">${shop.queue_count}</span>
                         <span class="queue-unit">組</span>
                     </div>
                 </div>
             `;
         }
 
-        // Render grid (4 columns x 8 rows)
+        // Render grid
         function renderGrid(stores) {
             const grid = document.getElementById('grid');
 
@@ -268,26 +369,22 @@
                 return;
             }
 
-            // Split into 4 columns
-            const columns = [[], [], [], []];
-            stores.forEach((store, index) => {
-                columns[index % 4].push(store);
-            });
-
-            // Render each column
-            grid.innerHTML = columns.map(col => `
-                <div class="column">
-                    ${col.map(store => createDataCell(store)).join('')}
-                </div>
-            `).join('');
+            grid.innerHTML = stores.map(store => createShopCard(store)).join('');
         }
 
-        // Update footer time
-        function updateTime() {
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            document.getElementById('footerTime').textContent = `${hours}:${minutes}`;
+        // Update stats
+        function updateStats(stores) {
+            const total = stores.length;
+            const free = stores.filter(s => s.queue_count === 0).length;
+            const busy = stores.filter(s => s.queue_count > 10).length;
+            const avgWait = stores.length > 0
+                ? Math.round(stores.reduce((sum, s) => sum + s.wait, 0) / stores.length)
+                : 0;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('freeCount').textContent = free;
+            document.getElementById('busyCount').textContent = busy;
+            document.getElementById('avgWait').textContent = `${avgWait}分`;
         }
 
         // Fetch data from API
@@ -306,7 +403,7 @@
                 const storeListResponse = await fetch(storeListUrl);
                 const storeListData = await storeListResponse.json();
 
-                // Transform data to match the design format
+                // Transform data
                 allStores = storeListData.map(store => ({
                     shop_name: store.name.replace('店', ''),
                     queue_count: store.waitingGroup || 0,
@@ -315,16 +412,15 @@
                     status: store.storeStatus
                 }));
 
-                // Sort by queue count (descending) to show busy stores first
+                // Sort by queue count (descending)
                 allStores.sort((a, b) => b.queue_count - a.queue_count);
 
-                // Limit to MAX_SHOPS (32)
+                // Limit to MAX_SHOPS
                 allStores = allStores.slice(0, MAX_SHOPS);
 
                 // Render
                 renderGrid(allStores);
-
-                // Update time
+                updateStats(allStores);
                 updateTime();
 
                 console.log(`✅ 載入成功：${allStores.length} 間店舖`);
@@ -348,7 +444,7 @@
         function startAutoRefresh() {
             refreshInterval = setInterval(() => {
                 countdown--;
-                document.getElementById('refreshIndicator').textContent = `${countdown}s`;
+                document.getElementById('refreshTimer').textContent = `${countdown}秒後更新`;
 
                 if (countdown <= 0) {
                     refreshData();
