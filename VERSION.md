@@ -1,5 +1,22 @@
 # 壽司郎排隊 App 版本記錄
 
+## V2 (2026-07-19)
+**改動：**
+- 全面壓縮spacing：header、tab、store-grid、store-card、info-row、tickets
+- Tab padding: 6px → 3px
+- Store Card margin: 6px → 3px, padding: 10px 12px 8px → 5px 8px 4px
+- Store Card border-radius: 10px → 8px
+- Store Name margin: 6px → 2px
+- Info Row margin: 6px → 2px
+- Tickets gap: 6px → 3px, padding-top: 6px → 3px
+- Tracking Bar padding: 10px 14px → 5px 8px
+- Tracking Bar buttons padding: 8px 12px → 4px 8px
+- Modal body padding: 20px 18px 28px → 10px 12px 14px
+- Modal input width: 140px → 120px
+- Grid row gap: 6px → 3px
+- Refresh button size: 44px → 36px
+- Alert modal padding: 32px 24px → 20px 16px
+
 ## V1 (2026-07-19)
 **功能：**
 - 左右並排顯示，每頁5行10個分店
