@@ -1667,7 +1667,7 @@
                 refreshIcon.style.animation = 'spin 1s linear infinite';
 
                 // Fetch store list
-                const storeListUrl = `${CORS_PROXY}${API_BASE}/info/storelist?latitude=22&longitude=114&numresults=25&region=HK`;
+                const storeListUrl = `${CORS_PROXY}${API_BASE}/info/storelist?latitude=22&longitude=114&numresults=100&region=HK`;
                 const storeListResponse = await fetch(storeListUrl);
                 const storeListData = await storeListResponse.json();
 
