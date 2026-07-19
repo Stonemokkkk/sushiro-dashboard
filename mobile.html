@@ -108,24 +108,25 @@
         .tab.nt.active { background: var(--nt); }
         .tab:active { opacity: 0.8; }
 
-        /* Store List - Scrollable */
-        .store-list {
+        /* Store Grid - 2 columns, scrollable */
+        .store-grid {
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior-y: contain;
             background: var(--gray);
-            padding: 8px;
+            padding: 6px;
         }
 
-        /* Store Card */
+        /* Store Card - compact 2-column */
         .store-card {
             background: var(--white);
-            border-radius: 12px;
-            margin-bottom: 8px;
+            border-radius: 10px;
+            margin-bottom: 6px;
             overflow: hidden;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
             position: relative;
+            padding: 10px 12px 8px;
         }
 
         .store-card::before {
@@ -134,117 +135,99 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 3px;
         }
 
         .store-card.hk::before { background: var(--hk); }
         .store-card.kc::before { background: var(--kc); }
         .store-card.nt::before { background: var(--nt); }
-
-        .store-card.tracking {
-            border: 2px solid var(--red);
-        }
+        .store-card.tracking { border: 2px solid var(--red); }
 
         .tracking-badge {
             position: absolute;
-            top: 8px;
-            right: 8px;
+            top: 6px;
+            right: 6px;
             background: var(--red);
             color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 3px;
             font-weight: 700;
         }
 
         /* Store Name */
         .store-name {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 900;
             color: var(--text);
-            padding: 12px 14px 6px;
             line-height: 1.2;
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Wait Info Row */
-        .wait-row {
+        /* Wait + Queue Row */
+        .info-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 6px 14px 10px;
+            align-items: baseline;
+            margin-bottom: 6px;
         }
 
-        .wait-info {
+        .wait {
             display: flex;
             align-items: baseline;
-            gap: 4px;
+            gap: 2px;
         }
 
-        .wait-label {
-            font-size: 13px;
-            color: #999;
-        }
-
-        .wait-number {
-            font-size: 42px;
+        .wait-num {
+            font-size: 32px;
             font-weight: 900;
             line-height: 1;
             color: var(--text);
-            font-variant-numeric: tabular-nums;
         }
 
-        .wait-number.busy {
-            color: var(--red);
-        }
+        .wait-num.busy { color: var(--red); }
 
         .wait-unit {
-            font-size: 14px;
+            font-size: 12px;
             color: #999;
         }
 
-        .queue-info {
+        .queue {
             text-align: right;
         }
 
-        .queue-number {
-            font-size: 36px;
+        .queue-num {
+            font-size: 28px;
             font-weight: 900;
             line-height: 1;
             color: var(--text);
         }
 
         .queue-label {
-            font-size: 12px;
+            font-size: 10px;
             color: #999;
         }
 
         /* Ticket Numbers */
         .tickets {
-            background: #f8f8f8;
-            padding: 8px 14px;
             display: flex;
             justify-content: center;
-            gap: 16px;
+            gap: 12px;
+            padding-top: 6px;
             border-top: 1px solid #eee;
         }
 
         .ticket {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 700;
             color: var(--text);
             font-variant-numeric: tabular-nums;
         }
 
-        .ticket.empty {
-            color: #ccc;
-            font-weight: 400;
-        }
-
-        .ticket-label {
-            font-size: 10px;
-            color: #999;
-            text-align: center;
-        }
+        .ticket.empty { color: #ccc; font-weight: 400; }
 
         /* Tracking Bar */
         .tracking-bar {
@@ -291,9 +274,6 @@
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             z-index: 90;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .refresh-btn:active { transform: scale(0.9); }
@@ -414,7 +394,7 @@
         .loading {
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            height: 100%; gap: 12px;
+            padding: 40px; gap: 12px;
         }
 
         .spinner {
@@ -446,8 +426,8 @@
         <button class="tab nt" data-region="新界" onclick="filterRegion('新界')">新界</button>
     </div>
 
-    <!-- Store List -->
-    <div class="store-list" id="storeList">
+    <!-- Store Grid -->
+    <div class="store-grid" id="storeGrid">
         <div class="loading">
             <div class="spinner"></div>
             <div class="loading-text">載入中...</div>
@@ -518,61 +498,65 @@
             currentRegion = region;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelector(`[data-region="${region}"]`).classList.add('active');
-            renderList();
+            renderGrid();
         }
 
-        // Render store list
-        function renderList() {
-            const list = document.getElementById('storeList');
+        // Render store grid (2 columns, 5 rows per view = 10 stores)
+        function renderGrid() {
+            const grid = document.getElementById('storeGrid');
             let filtered = currentRegion === 'all' ? allStores : allStores.filter(s => s.region === currentRegion);
 
             if (filtered.length === 0) {
-                list.innerHTML = '<div class="loading"><div class="loading-text">冇數據</div></div>';
+                grid.innerHTML = '<div class="loading"><div class="loading-text">冇數據</div></div>';
                 return;
             }
 
-            list.innerHTML = filtered.map(store => {
-                const hasQueue = store.queue_count > 0;
-                const hasWait = store.wait > 0;
-                const hasTickets = store.tickets && store.tickets.length > 0;
-                const isTracking = trackedStoreId === store.id;
-                const regionClass = getRegionClass(store.region);
+            // Build 2-column rows
+            let html = '';
+            for (let i = 0; i < filtered.length; i += 2) {
+                const left = filtered[i];
+                const right = filtered[i + 1];
+                html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">`;
+                html += buildCard(left);
+                html += right ? buildCard(right) : '<div></div>';
+                html += '</div>';
+            }
 
-                // Pad tickets to 3
-                const tickets = [...(store.tickets || [])];
-                while (tickets.length < 3) tickets.push('');
+            grid.innerHTML = html;
+        }
 
-                return `
-                    <div class="store-card ${regionClass} ${isTracking ? 'tracking' : ''}" onclick="openModal(${store.id})">
-                        ${isTracking ? '<div class="tracking-badge">追蹤中</div>' : ''}
-                        <div class="store-name">${store.shop_name}</div>
-                        <div class="wait-row">
-                            <div class="wait-info">
-                                <span class="wait-number ${store.wait > 30 ? 'busy' : ''}">${store.wait}</span>
-                                <span class="wait-unit">分</span>
-                            </div>
-                            <div class="queue-info">
-                                <div class="queue-number">${store.queue_count}</div>
-                                <div class="queue-label">組等候</div>
-                            </div>
+        function buildCard(store) {
+            if (!store) return '<div></div>';
+
+            const hasQueue = store.queue_count > 0;
+            const isTracking = trackedStoreId === store.id;
+            const regionClass = getRegionClass(store.region);
+
+            // Pad tickets to 3
+            const tickets = [...(store.tickets || [])];
+            while (tickets.length < 3) tickets.push('');
+
+            return `
+                <div class="store-card ${regionClass} ${isTracking ? 'tracking' : ''}" onclick="openModal(${store.id})">
+                    ${isTracking ? '<div class="tracking-badge">追蹤中</div>' : ''}
+                    <div class="store-name">${store.shop_name}</div>
+                    <div class="info-row">
+                        <div class="wait">
+                            <span class="wait-num ${store.wait > 30 ? 'busy' : ''}">${store.wait}</span>
+                            <span class="wait-unit">分</span>
                         </div>
-                        <div class="tickets">
-                            <div>
-                                <div class="ticket ${tickets[0] ? '' : 'empty'}">${tickets[0] || '-'}</div>
-                                <div class="ticket-label">叫緊</div>
-                            </div>
-                            <div>
-                                <div class="ticket ${tickets[1] ? '' : 'empty'}">${tickets[1] || '-'}</div>
-                                <div class="ticket-label">叫緊</div>
-                            </div>
-                            <div>
-                                <div class="ticket ${tickets[2] ? '' : 'empty'}">${tickets[2] || '-'}</div>
-                                <div class="ticket-label">叫緊</div>
-                            </div>
+                        <div class="queue">
+                            <div class="queue-num">${store.queue_count}</div>
+                            <div class="queue-label">組</div>
                         </div>
                     </div>
-                `;
-            }).join('');
+                    <div class="tickets">
+                        <span class="ticket ${tickets[0] ? '' : 'empty'}">${tickets[0] || '-'}</span>
+                        <span class="ticket ${tickets[1] ? '' : 'empty'}">${tickets[1] || '-'}</span>
+                        <span class="ticket ${tickets[2] ? '' : 'empty'}">${tickets[2] || '-'}</span>
+                    </div>
+                </div>
+            `;
         }
 
         function getRegionClass(region) {
@@ -608,8 +592,7 @@
                     if (ticketNum <= minCurrent) {
                         document.getElementById('trackingBarStatus').textContent = '到你啦！';
                     } else {
-                        const diff = ticketNum - minCurrent;
-                        document.getElementById('trackingBarStatus').textContent = '仲有 ' + diff + ' 張';
+                        document.getElementById('trackingBarStatus').textContent = '仲有 ' + (ticketNum - minCurrent) + ' 張';
                     }
                 } else {
                     document.getElementById('trackingBarStatus').textContent = '等待中';
@@ -695,7 +678,7 @@
             const store = allStores.find(s => s.id === currentStoreId);
             if (store) updateTrackingStatus(store);
 
-            renderList();
+            renderGrid();
             updateTrackingBar();
             closeModal();
         }
@@ -706,7 +689,7 @@
             alertPlayed = false;
             localStorage.removeItem('sushiro_tracking');
             closeModal();
-            renderList();
+            renderGrid();
             updateTrackingBar();
         }
 
@@ -821,7 +804,7 @@
                     return rd !== 0 ? rd : b.queue_count - a.queue_count;
                 });
 
-                renderList();
+                renderGrid();
                 updateTime();
 
                 // Fetch tickets
@@ -840,12 +823,12 @@
                     }));
                 }
 
-                renderList();
+                renderGrid();
                 checkTrackedTickets();
                 console.log(`✅ 載入成功：${allStores.length} 間店舖`);
             } catch (error) {
                 console.error('❌ 載入失敗:', error);
-                document.getElementById('storeList').innerHTML = '<div class="loading"><div class="loading-text">載入失敗</div></div>';
+                document.getElementById('storeGrid').innerHTML = '<div class="loading"><div class="loading-text">載入失敗</div></div>';
             }
         }
 
