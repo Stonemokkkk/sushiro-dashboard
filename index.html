@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍣 壽司郎即時排隊儀表板 - Sushiro Live Queue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        :root {
+            --primary: #e63946;
+            --primary-dark: #c1121f;
+            --secondary: #457b9d;
+            --accent: #f4a261;
+            --success: #2d6a4f;
+            --warning: #e9c46a;
+            --danger: #e76f51;
+        }
+
+        body {
+            background: linear-gradient(135deg, #fefefe 0%, #f8f9fa 100%);
+            min-height: 100vh;
+        }
+
+        .glass-header {
+            background: linear-gradient(135deg, rgba(230, 57, 70, 0.95) 0%, rgba(199, 18, 31, 0.98) 100%);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 30px rgba(230, 57, 70, 0.3);
+        }
+
+        .gradient-animated {
+            background: linear-gradient(-45deg, #e63946, #c1121f, #a4161a, #e63946);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .store-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .store-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 12px 40px rgba(230, 57, 70, 0.15);
+            border-color: rgba(230, 57, 70, 0.2);
+        }
+
+        .store-card:active {
+            transform: translateY(-2px) scale(0.99);
+        }
+
+        .wait-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.5rem;
+            line-height: 1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .wait-pill.green {
+            background: linear-gradient(135deg, #2d6a4f 0%, #40916c 100%);
+            color: white;
+        }
+
+        .wait-pill.yellow {
+            background: linear-gradient(135deg, #e9c46a 0%, #f4a261 100%);
+            color: #1a1a1a;
+        }
+
+        .wait-pill.orange {
+            background: linear-gradient(135deg, #f4a261 0%, #e76f51 100%);
+            color: white;
+        }
+
+        .wait-pill.red {
+            background: linear-gradient(135deg, #e76f51 0%, #e63946 100%);
+            color: white;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-open {
+            background: linear-gradient(135deg, #d8f3dc 0%, #b7e4c7 100%);
+            color: #2d6a4f;
+        }
+
+        .status-closed {
+            background: #f1f1f1;
+            color: #6c757d;
+        }
+
+        .status-online {
+            background: linear-gradient(135deg, #d0e8ff 0%, #bae6fd 100%);
+            color: #0369a1;
+        }
+
+        .status-offline {
+            background: linear-gradient(135deg, #ffe5d0 0%, #fed7aa 100%);
+            color: #c2410c;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            background: white;
+            font-size: 0.9rem;
+            color: #495057;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236c757d'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+        }
+
+        #map {
+            height: 450px;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .custom-marker {
+            background: none;
+            border: none;
+        }
+
+        .marker-inner {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 3px solid white;
+            transition: transform 0.2s ease;
+        }
+
+        .marker-inner:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow: hidden;
+            animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 20px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .action-btn-primary {
+            background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+        }
+
+        .action-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
+        }
+
+        .action-btn-secondary {
+            background: linear-gradient(135deg, #457b9d 0%, #1d3557 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(69, 123, 157, 0.3);
+        }
+
+        .action-btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(69, 123, 157, 0.4);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #dee2e6 0%, #ced4da 100%);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #ced4da 0%, #adb5bd 100%);
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: livePulse 2s infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+            }
+        }
+
+        .hot-badge {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .store-list-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #94a3b8;
+        }
+
+        .footer a {
+            color: #e2e8f0;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer a:hover {
+            color: #e63946;
+        }
+
+        /* Prediction badge */
+        .prediction-badge {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Chart container */
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        /* Tab buttons */
+        .tab-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .tab-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+            color: white;
+        }
+
+        /* History stats */
+        .history-stat {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .history-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .history-stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        /* Best time indicator */
+        .best-time {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .worst-time {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        @media (max-width: 1024px) {
+            #map {
+                height: 350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #map {
+                height: 300px;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            .stat-number {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="glass-header text-white sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-sm">
+                        🍣
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight">壽司郎即時排隊</h1>
+                        <p class="text-red-100 text-sm flex items-center gap-2">
+                            <span class="live-dot"></span>
+                            Sushiro Live Queue Dashboard
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-xs text-red-100">上次更新</p>
+                        <p id="lastUpdate" class="text-sm font-medium">載入中...</p>
+                    </div>
+                    <button onclick="refreshData()" class="bg-white/20 hover:bg-white/30 px-4 py-2.5 rounded-xl transition-all duration-200 flex items-center space-x-2 backdrop-blur-sm hover:scale-105 active:scale-95">
+                        <svg id="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span class="hidden sm:inline">重新整理</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <div class="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-[72px] z-40">
+        <div class="container mx-auto px-4 py-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="stat-card">
+                    <div class="stat-number text-gray-800" id="totalStores">-</div>
+                    <div class="text-xs text-gray-500 font-medium">總店舖數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number text-emerald-600" id="openStores">-</div>
+                    <div class="text-xs text-gray-500 font-medium">營業中</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number text-rose-500" id="busyStores">-</div>
+                    <div class="text-xs text-gray-500 font-medium">繁忙 >30分鐘</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number text-blue-500" id="avgWait">-</div>
+                    <div class="text-xs text-gray-500 font-medium">平均等候</div>
+                </div>
+            </div>
+            <div class="flex items-center justify-end mt-3 pt-3 border-t border-gray-100">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-gray-500">自動更新</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoRefresh" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="text-sm text-gray-600 font-medium" id="refreshTimer">30秒</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Map Section -->
+            <div class="lg:col-span-2 space-y-4">
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                    <div class="section-header">
+                        <div class="section-icon">📍</div>
+                        <div>
+                            <h2 class="font-semibold text-gray-800">全香港壽司郎分佈</h2>
+                            <p class="text-xs text-gray-500">點擊標記查看詳情</p>
+                        </div>
+                    </div>
+                    <div id="map" class="w-full"></div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-section p-5">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="section-icon">🔍</div>
+                        <h3 class="font-semibold text-gray-800">篩選與排序</h3>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-2 font-medium">地區</label>
+                            <select id="filterArea" onchange="applyFilters()" class="filter-select">
+                                <option value="all">全部地區</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-2 font-medium">狀態</label>
+                            <select id="filterStatus" onchange="applyFilters()" class="filter-select">
+                                <option value="all">全部狀態</option>
+                                <option value="OPEN">營業中</option>
+                                <option value="CLOSED">已關門</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-2 font-medium">等候時間</label>
+                            <select id="filterWait" onchange="applyFilters()" class="filter-select">
+                                <option value="all">全部</option>
+                                <option value="0">即場有位</option>
+                                <option value="15">15分鐘內</option>
+                                <option value="30">30分鐘內</option>
+                                <option value="60">1小時內</option>
+                                <option value="999">超過1小時</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-2 font-medium">排序</label>
+                            <select id="sortBy" onchange="applyFilters()" class="filter-select">
+                                <option value="wait">等候時間 ↑</option>
+                                <option value="waitDesc">等候時間 ↓</option>
+                                <option value="groups">等候組數 ↑</option>
+                                <option value="groupsDesc">等候組數 ↓</option>
+                                <option value="name">名稱 A-Z</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Store List -->
+            <div class="lg:col-span-1">
+                <div class="store-list-container h-[calc(100vh-340px)] flex flex-col">
+                    <div class="section-header flex-shrink-0">
+                        <div class="section-icon">📋</div>
+                        <div class="flex-1">
+                            <h2 class="font-semibold text-gray-800">分店列表</h2>
+                            <p class="text-xs text-gray-500" id="storeCount">0 間店舖</p>
+                        </div>
+                    </div>
+                    <div id="storeList" class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
+                        <!-- Store cards will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History & Prediction Section -->
+        <div class="mt-8">
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                <div class="section-header">
+                    <div class="section-icon">📊</div>
+                    <div class="flex-1">
+                        <h2 class="font-semibold text-gray-800">歷史數據與預測</h2>
+                        <p class="text-xs text-gray-500">基於收集嘅數據分析排隊趨勢</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="showTab('today')" class="tab-btn active" id="tabToday">今日</button>
+                        <button onclick="showTab('week')" class="tab-btn" id="tabWeek">本週</button>
+                        <button onclick="showTab('prediction')" class="tab-btn" id="tabPrediction">預測</button>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <!-- Today's Tab -->
+                    <div id="todayContent" class="space-y-6">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="history-stat">
+                                <div class="history-stat-value" id="todaySamples">0</div>
+                                <div class="history-stat-label">數據點數</div>
+                            </div>
+                            <div class="history-stat">
+                                <div class="history-stat-value" id="todayAvg">0</div>
+                                <div class="history-stat-label">平均等候</div>
+                            </div>
+                            <div class="history-stat">
+                                <div class="history-stat-value" id="todayMax">0</div>
+                                <div class="history-stat-label">最高等候</div>
+                            </div>
+                            <div class="history-stat">
+                                <div class="history-stat-value" id="todayMin">0</div>
+                                <div class="history-stat-label">最低等候</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="todayChart" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Week's Tab -->
+                    <div id="weekContent" class="space-y-6 hidden">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div class="history-stat">
+                                <div class="history-stat-value" id="weekSamples">0</div>
+                                <div class="history-stat-label">總數據點</div>
+                            </div>
+                            <div class="history-stat">
+                                <div class="history-stat-value" id="weekAvg">0</div>
+                                <div class="history-stat-label">週平均等候</div>
+                            </div>
+                            <div class="history-stat">
+                                <div class="history-stat-value" id="weekPeak">-</div>
+                                <div class="history-stat-label">最繁忙時段</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="weekChart" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Prediction Tab -->
+                    <div id="predictionContent" class="space-y-6 hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-4">
+                                <h3 class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <span>🔮</span> 最佳用餐時間
+                                </h3>
+                                <div id="bestTimeRecommendation" class="p-4 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
+                                    <p class="text-sm text-gray-600">根據歷史數據，以下時段通常較少人排隊：</p>
+                                    <div id="bestTimesList" class="mt-3 space-y-2"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <h3 class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <span>⏰</span> 預計等候時間
+                                </h3>
+                                <div id="predictionResult" class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                                    <p class="text-sm text-gray-600">而家嘅預計等候：</p>
+                                    <div id="currentPrediction" class="mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="predictionChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Store Detail Modal -->
+    <div id="storeModal" class="fixed inset-0 modal-overlay z-50 hidden items-center justify-center p-4" onclick="handleModalClick(event)">
+        <div class="modal-content w-full max-w-md" onclick="event.stopPropagation()">
+            <div id="modalHeader" class="gradient-animated text-white p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <h3 id="modalTitle" class="text-xl font-bold">店舖詳情</h3>
+                        <p id="modalArea" class="text-red-100 text-sm mt-1"></p>
+                    </div>
+                    <button onclick="closeModal()" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-200 hover:scale-110 active:scale-95">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="modalContent" class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+                <!-- Modal content will be inserted here -->
+            </div>
+            <div id="modalActions" class="p-4 bg-gray-50 border-t border-gray-100">
+                <div class="flex gap-3">
+                    <a id="modalNavBtn" href="#" target="_blank" class="action-btn action-btn-secondary flex-1">
+                        <span>🧭</span>
+                        <span>導航前往</span>
+                    </a>
+                    <a id="modalQueueBtn" href="#" target="_blank" class="action-btn action-btn-primary flex-1">
+                        <span>🎫</span>
+                        <span>排隊取票</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer py-6 mt-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-center md:text-left">
+                    <p class="text-sm">數據來源：Sushiro Hong Kong 官方 API</p>
+                    <p class="text-xs mt-1 opacity-70">僅供參考，實際等候時間以現場為準</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="https://www.sushiro.com.hk" target="_blank" class="text-sm hover:underline">官方網站</a>
+                    <span class="text-gray-600">•</span>
+                    <a href="https://github.com/yourusername/sushiro-dashboard" target="_blank" class="text-sm hover:underline">GitHub</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        let map;
+        let markers = {};
+        let allStores = [];
+        let filteredStores = [];
+        let refreshInterval;
+        let countdown = 30;
+        let isFirstLoad = true;
+        let todayChart = null;
+        let weekChart = null;
+        let predictionChart = null;
+
+        // CORS proxy (for local development)
+        const CORS_PROXY = 'https://cors.freehi.workers.dev/?';
+        const API_BASE = 'https://sushipass.sushiro.com.hk/api/2.0';
+
+        // History storage key
+        const HISTORY_KEY = 'sushiro_queue_history';
+
+        // Initialize map
+        function initMap() {
+            map = L.map('map', {
+                zoomControl: false
+            }).setView([22.35, 114.15], 11);
+
+            L.control.zoom({
+                position: 'topright'
+            }).addTo(map);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors, © CARTO',
+                maxZoom: 19
+            }).addTo(map);
+        }
+
+        // Get wait time color
+        function getWaitColor(wait) {
+            if (wait === 0) return '#2d6a4f';
+            if (wait <= 15) return '#40916c';
+            if (wait <= 30) return '#e9c46a';
+            if (wait <= 60) return '#f4a261';
+            return '#e76f51';
+        }
+
+        // Get wait pill class
+        function getWaitPillClass(wait) {
+            if (wait === 0) return 'green';
+            if (wait <= 15) return 'green';
+            if (wait <= 30) return 'yellow';
+            if (wait <= 60) return 'orange';
+            return 'red';
+        }
+
+        // Get wait time label
+        function getWaitLabel(wait) {
+            if (wait === 0) return '即場有位';
+            return `${wait}分鐘`;
+        }
+
+        // Get status badge
+        function getStatusBadge(status) {
+            if (status === 'OPEN') {
+                return '<span class="status-badge status-open"><span class="w-1.5 h-1.5 bg-emerald-600 rounded-full"></span>營業中</span>';
+            }
+            return '<span class="status-badge status-closed">已關門</span>';
+        }
+
+        // Get net ticket status badge
+        function getNetTicketStatus(status) {
+            const statusMap = {
+                'ON': { text: '網上排隊', class: 'status-online' },
+                'OFF': { text: '現場排隊', class: 'status-offline' },
+                'OFFLINE_MANUAL': { text: '現場排隊', class: 'status-offline' }
+            };
+            const s = statusMap[status] || { text: status, class: 'status-offline' };
+            return `<span class="status-badge ${s.class}">${s.text}</span>`;
+        }
+
+        // Create store card
+        function createStoreCard(store) {
+            const waitColor = getWaitColor(store.wait);
+            const waitPillClass = getWaitPillClass(store.wait);
+            const isBusy = store.wait > 30;
+
+            // Get prediction for this store
+            const prediction = getPredictionForStore(store.id);
+
+            return `
+                <div class="store-card p-4 cursor-pointer"
+                     onclick="showStoreDetail(${store.id})">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-semibold text-gray-800 text-sm leading-tight truncate">${store.name}</h4>
+                            <p class="text-xs text-gray-500 mt-1 truncate">${store.area}</p>
+                        </div>
+                        ${getStatusBadge(store.storeStatus)}
+                    </div>
+
+                    <div class="flex items-center justify-center py-3 bg-gray-50 rounded-xl mb-3">
+                        <div class="wait-pill ${waitPillClass}">
+                            ${store.wait}
+                        </div>
+                        <span class="text-gray-500 text-sm ml-2">分鐘</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-500">👥</span>
+                            <span class="text-sm font-medium text-gray-700">${store.waitingGroup} 組等候</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            ${prediction ? `<span class="prediction-badge">🔮 預測 ${prediction}分鐘</span>` : ''}
+                            ${getNetTicketStatus(store.netTicketStatus)}
+                            ${isBusy ? '<span class="hot-badge">🔥 繁忙</span>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Create marker
+        function createMarker(store) {
+            const waitColor = getWaitColor(store.wait);
+            const icon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div class="marker-inner" style="background-color: ${waitColor};">${store.wait}</div>`,
+                iconSize: [36, 36],
+                iconAnchor: [18, 18]
+            });
+
+            const marker = L.marker([store.latitude, store.longitude], { icon })
+                .addTo(map)
+                .bindPopup(`
+                    <div class="min-w-[220px] p-1">
+                        <h4 class="font-bold text-gray-800 text-base mb-1">${store.name}</h4>
+                        <p class="text-xs text-gray-500 mb-3">${store.area}</p>
+                        <div class="bg-gray-50 rounded-xl p-3 mb-3">
+                            <div class="flex items-center justify-center">
+                                <div class="wait-pill ${getWaitPillClass(store.wait)}" style="font-size: 1.25rem;">
+                                    ${store.wait}
+                                </div>
+                                <span class="text-gray-500 text-sm ml-2">分鐘</span>
+                            </div>
+                            <p class="text-center text-sm text-gray-600 mt-2">${store.waitingGroup} 組等候</p>
+                        </div>
+                        <button onclick="showStoreDetail(${store.id})" class="w-full action-btn action-btn-primary" style="padding: 10px; font-size: 0.875rem;">
+                            <span>查看詳情</span>
+                        </button>
+                    </div>
+                `);
+
+            return marker;
+        }
+
+        // Show store detail modal
+        function showStoreDetail(storeId) {
+            const store = allStores.find(s => s.id === storeId);
+            if (!store) return;
+
+            const waitColor = getWaitColor(store.wait);
+            const waitPillClass = getWaitPillClass(store.wait);
+            const prediction = getPredictionForStore(store.id);
+
+            document.getElementById('modalTitle').textContent = store.name;
+            document.getElementById('modalArea').textContent = store.area;
+            document.getElementById('modalNavBtn').href = `https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`;
+            document.getElementById('modalQueueBtn').href = `https://sushipass.sushiro.com.hk/store/${store.id}`;
+
+            document.getElementById('modalContent').innerHTML = `
+                <div class="space-y-5">
+                    <!-- Wait Time Display -->
+                    <div class="text-center py-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl">
+                        <p class="text-sm text-gray-500 mb-2">預計等候時間</p>
+                        <div class="flex items-center justify-center gap-2">
+                            <div class="wait-pill ${waitPillClass}" style="font-size: 2.5rem; padding: 12px 24px;">
+                                ${store.wait}
+                            </div>
+                            <span class="text-xl text-gray-500 font-medium">分鐘</span>
+                        </div>
+                        ${prediction ? `
+                            <div class="mt-3">
+                                <span class="prediction-badge">🔮 AI 預測：${prediction}分鐘</span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center p-4 bg-blue-50 rounded-2xl">
+                            <div class="text-3xl font-bold text-blue-600 mb-1">${store.waitingGroup}</div>
+                            <div class="text-xs text-gray-600 font-medium">等候組數</div>
+                        </div>
+                        <div class="text-center p-4 bg-emerald-50 rounded-2xl">
+                            <div class="text-3xl font-bold text-emerald-600 mb-1">${store.tablesCapacity}</div>
+                            <div class="text-xs text-gray-600 font-medium">座位數</div>
+                        </div>
+                    </div>
+
+                    <!-- Store Info -->
+                    <div class="space-y-4 bg-gray-50 rounded-2xl p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">📍</div>
+                            <div class="flex-1">
+                                <p class="text-xs text-gray-500 mb-1">地址</p>
+                                <p class="text-sm text-gray-800">${store.address}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">🕐</div>
+                            <div class="flex-1">
+                                <p class="text-xs text-gray-500 mb-1">狀態</p>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    ${getStatusBadge(store.storeStatus)}
+                                    ${getNetTicketStatus(store.netTicketStatus)}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">📅</div>
+                            <div class="flex-1">
+                                <p class="text-xs text-gray-500 mb-1">開業日期</p>
+                                <p class="text-sm text-gray-800">${store.commencementDate || '未知'}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('storeModal').classList.remove('hidden');
+            document.getElementById('storeModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('storeModal').classList.add('hidden');
+            document.getElementById('storeModal').classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        // Handle modal click
+        function handleModalClick(event) {
+            if (event.target === document.getElementById('storeModal')) {
+                closeModal();
+            }
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const area = document.getElementById('filterArea').value;
+            const status = document.getElementById('filterStatus').value;
+            const wait = document.getElementById('filterWait').value;
+            const sort = document.getElementById('sortBy').value;
+
+            filteredStores = allStores.filter(store => {
+                if (area !== 'all' && store.area !== area) return false;
+                if (status !== 'all' && store.storeStatus !== status) return false;
+                if (wait !== 'all') {
+                    if (wait === '999' && store.wait < 60) return false;
+                    if (wait !== '999' && store.wait > parseInt(wait)) return false;
+                }
+                return true;
+            });
+
+            filteredStores.sort((a, b) => {
+                switch (sort) {
+                    case 'wait': return a.wait - b.wait;
+                    case 'waitDesc': return b.wait - a.wait;
+                    case 'groups': return a.waitingGroup - b.waitingGroup;
+                    case 'groupsDesc': return b.waitingGroup - a.waitingGroup;
+                    case 'name': return a.name.localeCompare(b.name, 'zh-Hant');
+                    default: return 0;
+                }
+            });
+
+            renderStoreList();
+            updateMapMarkers();
+        }
+
+        // Render store list
+        function renderStoreList() {
+            const container = document.getElementById('storeList');
+
+            if (filteredStores.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <p class="font-medium">冇搵到符合條件嘅店舖</p>
+                        <p class="text-sm mt-1">請嘗試調整篩選條件</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = filteredStores.map(store => createStoreCard(store)).join('');
+            }
+
+            document.getElementById('storeCount').textContent = `${filteredStores.length} 間店舖`;
+        }
+
+        // Update map markers
+        function updateMapMarkers() {
+            Object.values(markers).forEach(marker => map.removeLayer(marker));
+            markers = {};
+
+            filteredStores.forEach(store => {
+                if (store.latitude && store.longitude) {
+                    markers[store.id] = createMarker(store);
+                }
+            });
+
+            if (filteredStores.length > 0) {
+                const bounds = L.latLngBounds(filteredStores.map(s => [s.latitude, s.longitude]));
+                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+            }
+        }
+
+        // Update stats
+        function updateStats() {
+            const openStores = allStores.filter(s => s.storeStatus === 'OPEN');
+            const busyStores = openStores.filter(s => s.wait > 30);
+            const avgWait = openStores.length > 0
+                ? Math.round(openStores.reduce((sum, s) => sum + s.wait, 0) / openStores.length)
+                : 0;
+
+            document.getElementById('totalStores').textContent = allStores.length;
+            document.getElementById('openStores').textContent = openStores.length;
+            document.getElementById('busyStores').textContent = busyStores.length;
+            document.getElementById('avgWait').textContent = `${avgWait}分鐘`;
+        }
+
+        // Populate area filter
+        function populateAreaFilter() {
+            const select = document.getElementById('filterArea');
+            const currentValue = select.value;
+
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+
+            const areas = [...new Set(allStores.map(s => s.area))].sort();
+            areas.forEach(area => {
+                const option = document.createElement('option');
+                option.value = area;
+                option.textContent = area;
+                select.appendChild(option);
+            });
+
+            select.value = currentValue;
+        }
+
+        // Show loading state
+        function showLoading() {
+            const container = document.getElementById('storeList');
+            container.innerHTML = Array(5).fill(`
+                <div class="store-card p-4">
+                    <div class="skeleton h-4 w-3/4 mb-2"></div>
+                    <div class="skeleton h-3 w-1/2 mb-4"></div>
+                    <div class="skeleton h-16 w-full mb-3"></div>
+                    <div class="skeleton h-4 w-full"></div>
+                </div>
+            `).join('');
+        }
+
+        // ===== HISTORY & PREDICTION FUNCTIONS =====
+
+        // Load history from localStorage
+        function loadHistory() {
+            try {
+                const data = localStorage.getItem(HISTORY_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        // Save history to localStorage
+        function saveHistory(history) {
+            try {
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+            } catch (e) {
+                console.error('Failed to save history:', e);
+            }
+        }
+
+        // Record current data to history
+        function recordToHistory() {
+            const history = loadHistory();
+            const now = new Date();
+            const record = {
+                timestamp: now.toISOString(),
+                hour: now.getHours(),
+                dayOfWeek: now.getDay(),
+                stores: allStores.map(s => ({
+                    id: s.id,
+                    name: s.name,
+                    wait: s.wait,
+                    waitingGroup: s.waitingGroup,
+                    storeStatus: s.storeStatus
+                }))
+            };
+
+            history.push(record);
+
+            // Keep only last 7 days of data (assuming 30s intervals = ~20160 records max)
+            const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const filteredHistory = history.filter(r => new Date(r.timestamp) > sevenDaysAgo);
+
+            saveHistory(filteredHistory);
+            console.log(`📊 History recorded: ${filteredHistory.length} total records`);
+        }
+
+        // Get history for today
+        function getTodayHistory() {
+            const history = loadHistory();
+            const today = new Date().toDateString();
+            return history.filter(r => new Date(r.timestamp).toDateString() === today);
+        }
+
+        // Get history for this week
+        function getWeekHistory() {
+            const history = loadHistory();
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return history.filter(r => new Date(r.timestamp) > weekAgo);
+        }
+
+        // Calculate average wait by hour
+        function getAverageWaitByHour(records) {
+            const hourData = {};
+
+            records.forEach(record => {
+                const hour = record.hour;
+                if (!hourData[hour]) {
+                    hourData[hour] = { total: 0, count: 0 };
+                }
+
+                record.stores.forEach(store => {
+                    if (store.storeStatus === 'OPEN') {
+                        hourData[hour].total += store.wait;
+                        hourData[hour].count++;
+                    }
+                });
+            });
+
+            const result = {};
+            for (let h = 0; h < 24; h++) {
+                if (hourData[h] && hourData[h].count > 0) {
+                    result[h] = Math.round(hourData[h].total / hourData[h].count);
+                } else {
+                    result[h] = null;
+                }
+            }
+
+            return result;
+        }
+
+        // Calculate average wait by day of week
+        function getAverageWaitByDay(records) {
+            const dayData = {};
+            const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+
+            records.forEach(record => {
+                const day = record.dayOfWeek;
+                if (!dayData[day]) {
+                    dayData[day] = { total: 0, count: 0 };
+                }
+
+                record.stores.forEach(store => {
+                    if (store.storeStatus === 'OPEN') {
+                        dayData[day].total += store.wait;
+                        dayData[day].count++;
+                    }
+                });
+            });
+
+            const result = {};
+            for (let d = 0; d < 7; d++) {
+                if (dayData[d] && dayData[d].count > 0) {
+                    result[d] = {
+                        avg: Math.round(dayData[d].total / dayData[d].count),
+                        name: dayNames[d]
+                    };
+                } else {
+                    result[d] = { avg: null, name: dayNames[d] };
+                }
+            }
+
+            return result;
+        }
+
+        // Get prediction for a store based on current time
+        function getPredictionForStore(storeId) {
+            const history = loadHistory();
+            if (history.length < 10) return null; // Need at least 10 data points
+
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentDay = now.getDay();
+
+            // Find similar time periods in history
+            const similarRecords = history.filter(r => {
+                const rHour = r.hour;
+                const rDay = r.dayOfWeek;
+                // Match same hour ±1 and same day type (weekday/weekend)
+                const hourMatch = Math.abs(rHour - currentHour) <= 1;
+                const isWeekend = currentDay === 0 || currentDay === 6;
+                const rIsWeekend = rDay === 0 || rDay === 6;
+                return hourMatch && (isWeekend === rIsWeekend);
+            });
+
+            if (similarRecords.length < 5) return null;
+
+            // Find store in those records and calculate average
+            const storeWaits = [];
+            similarRecords.forEach(record => {
+                const storeData = record.stores.find(s => s.id === storeId);
+                if (storeData && storeData.storeStatus === 'OPEN') {
+                    storeWaits.push(storeData.wait);
+                }
+            });
+
+            if (storeWaits.length < 3) return null;
+
+            return Math.round(storeWaits.reduce((a, b) => a + b, 0) / storeWaits.length);
+        }
+
+        // Get best times to visit
+        function getBestTimes() {
+            const history = loadHistory();
+            if (history.length < 20) return null;
+
+            const hourlyAvg = getAverageWaitByHour(history);
+
+            // Find hours with lowest average wait
+            const validHours = Object.entries(hourlyAvg)
+                .filter(([_, avg]) => avg !== null)
+                .sort((a, b) => a[1] - b[1]);
+
+            if (validHours.length < 3) return null;
+
+            return {
+                best: validHours.slice(0, 3).map(([hour, avg]) => ({
+                    hour: parseInt(hour),
+                    avg: avg
+                })),
+                worst: validHours.slice(-3).reverse().map(([hour, avg]) => ({
+                    hour: parseInt(hour),
+                    avg: avg
+                }))
+            };
+        }
+
+        // Format hour to time string
+        function formatHour(hour) {
+            return `${hour.toString().padStart(2, '0')}:00`;
+        }
+
+        // ===== CHART FUNCTIONS =====
+
+        // Update today's chart
+        function updateTodayChart() {
+            const todayHistory = getTodayHistory();
+
+            // Update stats
+            document.getElementById('todaySamples').textContent = todayHistory.length;
+
+            if (todayHistory.length === 0) {
+                document.getElementById('todayAvg').textContent = '-';
+                document.getElementById('todayMax').textContent = '-';
+                document.getElementById('todayMin').textContent = '-';
+                return;
+            }
+
+            // Calculate stats
+            const allWaits = todayHistory.flatMap(r =>
+                r.stores.filter(s => s.storeStatus === 'OPEN').map(s => s.wait)
+            );
+
+            const avg = Math.round(allWaits.reduce((a, b) => a + b, 0) / allWaits.length);
+            const max = Math.max(...allWaits);
+            const min = Math.min(...allWaits);
+
+            document.getElementById('todayAvg').textContent = `${avg}分鐘`;
+            document.getElementById('todayMax').textContent = `${max}分鐘`;
+            document.getElementById('todayMin').textContent = `${min}分鐘`;
+
+            // Prepare chart data
+            const hourlyData = getAverageWaitByHour(todayHistory);
+            const labels = Object.keys(hourlyData).map(h => formatHour(parseInt(h)));
+            const data = Object.values(hourlyData);
+
+            // Destroy existing chart
+            if (todayChart) {
+                todayChart.destroy();
+            }
+
+            // Create new chart
+            const ctx = document.getElementById('todayChart').getContext('2d');
+            todayChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '平均等候時間 (分鐘)',
+                        data: data,
+                        borderColor: '#e63946',
+                        backgroundColor: 'rgba(230, 57, 70, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '等候時間 (分鐘)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update week's chart
+        function updateWeekChart() {
+            const weekHistory = getWeekHistory();
+
+            document.getElementById('weekSamples').textContent = weekHistory.length;
+
+            if (weekHistory.length === 0) {
+                document.getElementById('weekAvg').textContent = '-';
+                document.getElementById('weekPeak').textContent = '-';
+                return;
+            }
+
+            // Calculate overall average
+            const allWaits = weekHistory.flatMap(r =>
+                r.stores.filter(s => s.storeStatus === 'OPEN').map(s => s.wait)
+            );
+            const avg = Math.round(allWaits.reduce((a, b) => a + b, 0) / allWaits.length);
+            document.getElementById('weekAvg').textContent = `${avg}分鐘`;
+
+            // Find peak hour
+            const hourlyAvg = getAverageWaitByHour(weekHistory);
+            const peakHour = Object.entries(hourlyAvg)
+                .filter(([_, avg]) => avg !== null)
+                .sort((a, b) => b[1] - a[1])[0];
+
+            if (peakHour) {
+                document.getElementById('weekPeak').textContent = formatHour(parseInt(peakHour[0]));
+            }
+
+            // Prepare chart data - by day of week
+            const dailyAvg = getAverageWaitByDay(weekHistory);
+            const labels = Object.values(dailyAvg).map(d => d.name);
+            const data = Object.values(dailyAvg).map(d => d.avg);
+
+            // Destroy existing chart
+            if (weekChart) {
+                weekChart.destroy();
+            }
+
+            // Create new chart
+            const ctx = document.getElementById('weekChart').getContext('2d');
+            weekChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '平均等候時間 (分鐘)',
+                        data: data,
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(249, 115, 22, 0.8)',
+                            'rgba(234, 179, 8, 0.8)',
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(139, 92, 246, 0.8)',
+                            'rgba(236, 72, 153, 0.8)'
+                        ],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '等候時間 (分鐘)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update prediction chart
+        function updatePredictionChart() {
+            const history = loadHistory();
+            if (history.length < 20) return;
+
+            const hourlyAvg = getAverageWaitByHour(history);
+            const labels = Object.keys(hourlyAvg).map(h => formatHour(parseInt(h)));
+            const data = Object.values(hourlyAvg);
+
+            // Destroy existing chart
+            if (predictionChart) {
+                predictionChart.destroy();
+            }
+
+            // Create new chart
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            predictionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '歷史平均等候時間',
+                        data: data,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '等候時間 (分鐘)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update best times
+            const bestTimes = getBestTimes();
+            if (bestTimes) {
+                const bestTimesList = document.getElementById('bestTimesList');
+                bestTimesList.innerHTML = bestTimes.best.map(t => `
+                    <div class="best-time">
+                        <span>✅</span>
+                        <span>${formatHour(t.hour)} - 平均 ${t.avg}分鐘</span>
+                    </div>
+                `).join('');
+
+                // Add worst times
+                bestTimesList.innerHTML += `
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <p class="text-sm text-gray-600 mb-2">避開以下時段：</p>
+                        ${bestTimes.worst.map(t => `
+                            <div class="worst-time mb-2">
+                                <span>❌</span>
+                                <span>${formatHour(t.hour)} - 平均 ${t.avg}分鐘</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Update current prediction
+            const currentHour = new Date().getHours();
+            const currentPrediction = hourlyAvg[currentHour];
+            if (currentPrediction !== null) {
+                document.getElementById('currentPrediction').innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="wait-pill ${getWaitPillClass(currentPrediction)}" style="font-size: 1.5rem;">
+                            ${currentPrediction}
+                        </div>
+                        <span class="text-gray-500">分鐘</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">基於${formatHour(currentHour)}時段嘅歷史數據</p>
+                `;
+            }
+        }
+
+        // Show tab
+        function showTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+
+            // Update content
+            document.getElementById('todayContent').classList.add('hidden');
+            document.getElementById('weekContent').classList.add('hidden');
+            document.getElementById('predictionContent').classList.add('hidden');
+            document.getElementById(`${tab}Content`).classList.remove('hidden');
+
+            // Update charts
+            if (tab === 'today') updateTodayChart();
+            if (tab === 'week') updateWeekChart();
+            if (tab === 'prediction') updatePredictionChart();
+        }
+
+        // ===== DATA FETCHING =====
+
+        // Fetch data from API
+        async function fetchData() {
+            try {
+                if (isFirstLoad) {
+                    showLoading();
+                }
+
+                // Animate refresh icon
+                const refreshIcon = document.getElementById('refreshIcon');
+                refreshIcon.style.animation = 'spin 1s linear infinite';
+
+                // Fetch store list
+                const storeListUrl = `${CORS_PROXY}${API_BASE}/info/storelist?latitude=22&longitude=114&numresults=25&region=HK`;
+                const storeListResponse = await fetch(storeListUrl);
+                const storeListData = await storeListResponse.json();
+
+                // Fetch queue details for each store
+                const queuePromises = storeListData.map(store => {
+                    const queueUrl = `${CORS_PROXY}${API_BASE}/remote/groupqueues?region=HK&storeid=${store.id}`;
+                    return fetch(queueUrl)
+                        .then(res => res.json())
+                        .then(queueData => ({
+                            ...store,
+                            queueDetails: queueData
+                        }))
+                        .catch(() => ({
+                            ...store,
+                            queueDetails: null
+                        }));
+                });
+
+                allStores = await Promise.all(queuePromises);
+
+                // Record to history
+                recordToHistory();
+
+                // Update UI
+                updateStats();
+                populateAreaFilter();
+                applyFilters();
+
+                // Update history charts
+                updateTodayChart();
+
+                // Update last update time
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('zh-HK');
+
+                // Reset refresh icon
+                refreshIcon.style.animation = '';
+                isFirstLoad = false;
+
+                console.log(`✅ 載入成功：${allStores.length} 間店舖`);
+            } catch (error) {
+                console.error('❌ 載入失敗:', error);
+                document.getElementById('storeList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <p class="font-medium">載入數據失敗</p>
+                        <p class="text-sm mt-1">請檢查網絡連接後再試</p>
+                        <button onclick="refreshData()" class="mt-4 action-btn action-btn-primary" style="display: inline-flex;">
+                            重試
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Refresh data
+        function refreshData() {
+            countdown = 30;
+            document.getElementById('refreshTimer').textContent = `${countdown}秒`;
+            fetchData();
+        }
+
+        // Start auto refresh
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                if (document.getElementById('autoRefresh').checked) {
+                    countdown--;
+                    document.getElementById('refreshTimer').textContent = `${countdown}秒`;
+
+                    if (countdown <= 0) {
+                        refreshData();
+                    }
+                }
+            }, 1000);
+        }
+
+        // Add spin animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            fetchData();
+            startAutoRefresh();
+
+            // Close modal on escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+
+            // Initialize charts
+            updateTodayChart();
+        });
+    </script>
+</body>
+</html>
