@@ -930,11 +930,25 @@
             }
         }
 
+        // Retry helper
+        async function fetchWithRetry(url, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response;
+                } catch (e) {
+                    if (i === retries - 1) throw e;
+                    await new Promise(r => setTimeout(r, delay * (i + 1)));
+                }
+            }
+        }
+
         // Fetch data
         async function fetchData() {
             try {
                 const storeListUrl = `${CORS_PROXY}${API_BASE}/info/storelist?latitude=22&longitude=114&numresults=100&region=HK`;
-                const storeListResponse = await fetch(storeListUrl);
+                const storeListResponse = await fetchWithRetry(storeListUrl);
                 const storeListData = await storeListResponse.json();
 
                 allStores = storeListData.map(store => ({
@@ -957,14 +971,14 @@
                 renderGrid();
                 updateTime();
 
-                // Fetch tickets
+                // Fetch tickets (batch of 10)
                 const batchSize = 10;
                 for (let i = 0; i < allStores.length; i += batchSize) {
                     const batch = allStores.slice(i, i + batchSize);
                     await Promise.all(batch.map(async (store) => {
                         try {
                             const url = `${CORS_PROXY}${API_BASE}/remote/groupqueues?region=HK&storeid=${store.id}`;
-                            const res = await fetch(url);
+                            const res = await fetchWithRetry(url, 2, 500);
                             const data = await res.json();
                             store.tickets = data.storeQueue || [];
                         } catch (e) {
@@ -975,10 +989,17 @@
 
                 renderGrid();
                 checkTrackedTickets();
+                lastUpdate = Date.now();
                 console.log(`✅ 載入成功：${allStores.length} 間店舖`);
             } catch (error) {
                 console.error('❌ 載入失敗:', error);
-                document.getElementById('storeGrid').innerHTML = '<div class="loading"><div class="loading-text">載入失敗</div></div>';
+                // Keep showing old data if available, otherwise show error
+                if (allStores.length === 0) {
+                    document.getElementById('storeGrid').innerHTML = '<div class="loading"><div class="loading-text">載入失敗，30秒後重試...</div></div>';
+                } else {
+                    // Show warning but keep data
+                    console.warn('⚠️ 更新失敗，保留舊數據');
+                }
             }
         }
 
@@ -987,10 +1008,18 @@
             fetchData();
         }
 
+        let lastUpdate = null;
+
         function startAutoRefresh() {
             refreshInterval = setInterval(() => {
                 countdown--;
                 if (countdown <= 0) refreshData();
+                // Update status indicator
+                const statusEl = document.querySelector('.time');
+                if (statusEl && lastUpdate) {
+                    const secs = Math.floor((Date.now() - lastUpdate) / 1000);
+                    statusEl.textContent = secs > 60 ? `${Math.floor(secs/60)}m ago` : `${secs}s`;
+                }
             }, 1000);
         }
 
